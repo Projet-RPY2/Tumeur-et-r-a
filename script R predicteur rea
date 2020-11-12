@@ -1,0 +1,166 @@
+# Predicteur passage en réanimation et durée de séjour chez patients atteints par cancer / tumeur
+
+# 1. Création d'un dataset avec seuleument les chirurgies tumorales
+# 2. Analayse basique du nouveau dataset divisé en deux groupes (Rea 1 / Réa 0) avec : médiane, écart type pour chaque variable. 
+# 3. Chercher les variables d'intérêts (sur les 130) en réalisant des test de Wilcoxon/ Fisher. 
+# 4. Réaliser une régression logistique en univariée sur uniquement les variables d'intérêt qui seront sorties en amont. 
+# 5. Bonus (si on est vraiment très forts) : Régression en multivariée. 
+
+--------------------------------------------
+# Chargement des librairies
+
+install.packages("dplyr") # pour manipulation des données
+library(dplyr)
+
+install.packages("tidyr") # pour ordonner, ranger les données
+library(tidyr)
+
+install.packages("ggplot2") # pour représentations graphiques
+library(ggplot2)
+
+library(MASS) # pour statistiques
+
+# Définition des chemins d'accès
+
+path_import = "/Users/karimbelarbi/Google_Drive/M1_Data_Science_en_Santé/Djamel Zitouni/Projet rpy2"
+
+# Chargement du jeu de données
+
+data_raw = read.csv2(file.path(path_import, "export_data_1.csv"), dec = ",", header = TRUE, encoding = "latin1", sep = ";")
+?read.csv2
+
+# Création d'une copie du fichier sur lesquel travailler
+data = data_raw
+
+# Première exploration des données
+head(data)
+str(data) # 299466 obs. of  130 variables # il faudrait pouvoir compter le nb de variables int et num.
+
+# noms de colonnes en minuscules
+colnames(data) = tolower(colnames(data))
+colnames(data)
+
+!any(duplicated(data$id_intervention)) # TRUE donc tous les id_intervention sont uniques (peut servir comme clef primaire)
+!any(duplicated(data$id_patient)) # FALSE donc un patient peut avoir plusieurs enregistrement
+
+summary(as.factor(data$lib_diagnostic)) # permet de voir le nombre d'enregistrement correspondant à chaque diagnostique. Peut aider à choisir changer de pathologie pour le sujet si necessaire.
+
+# Selection de variables d'intérêt pour la suite du projet
+# data = dplyr::select(data, id_intervention, id_patient, age, poids, categorie_age_adulte, poids, imc, categorie_imc_adulte, asa, urgence, sexe, duree_bloc, lib_diagnostic, entree_urgences, duree_sejour_interv, dobutamine, ephedrine, noradrenaline, phenylephrine, total_remplissage)
+
+# ajout d'une variable == 1 pour cancer ou tumeur ou == 0 sinon
+unique(data$lib_diagnostic[grepl("Cancer|cancer|Tumeur|tumeur", data$lib_diagnostic)]) # 632 lib_diagnostic correspondant. 
+
+for(i in 1:nrow(data)) {
+  data$cancer[i] = as.integer(grepl("Cancer|cancer|Tumeur|tumeur", data$lib_diagnostic[i]))
+}
+
+# Caractérisation des échantillons obtenus
+
+## nombre d'enregistrements et nombre de patients uniques associé à cancer/tumeur
+sum(data$cancer == 1) #  28990 enregistrement
+length(data$id_intervention[data$cancer == 1]) # idem
+length(unique(data$id_patient[data$cancer == 1])) # 21160 patientes uniques dans ces enregistrements
+
+summary(data) # stats sur population
+summary(data[data$cancer == 1,],) # stats sur échantillons associés à cancer/tumeur
+
+## création d'une base de données ne contenant que les enregistrements et variables d'intérêt pour la suite de l'étude
+# data_aomi = data[data$aomi == 1,]
+
+data_cancer = data %>%
+  filter(cancer == 1) %>%
+  dplyr::select(id_intervention, id_patient, age, poids, categorie_age_adulte, poids, imc, categorie_imc_adulte, asa, urgence, sexe, duree_bloc, lib_diagnostic, entree_urgences, duree_sejour_interv, rea_post_op, rea_si_post_op, dobutamine, ephedrine, noradrenaline, phenylephrine, total_remplissage, cancer)
+summary(data_cancer)
+
+##  ajout de variables dans la base data_cancer
+
+## ajout d'une variable correspondant au score ASA
+for(i in 1:nrow(data_cancer)) {
+  if (data_cancer$asa[i] == "ASA1") {
+    data_cancer$scoreasa[i] = 1 
+  } else if(data_cancer$asa[i] == "ASA2") {
+    data_cancer$scoreasa[i] = 2
+  } else if(data_cancer$asa[i] == "ASA3")  {
+    data_cancer$scoreasa[i] = 3
+  } else if(data_cancer$asa[i] == "ASA4") {
+    data_cancer$scoreasa[i] = 4
+  } else if(data_cancer$asa[i] == "ASA5") {
+    data_cancer$scoreasa[i] = 5
+  }
+}
+
+## ajout d'une variable == 1 pour usage catécholamine
+for(i in 1:nrow(data_cancer)) {
+  data_cancer$catecholamine[i] = as.integer(data_cancer$dobutamine[i] == 1 |data_cancer$ephedrine[i] == 1 | data_cancer$noradrenaline[i] == 1 | data_cancer$phenylephrine[i] == 1)
+}
+
+# correction du type de variable # Je ne sais pas si c'est ce qu'il faut pour la suite
+data_cancer = data_cancer %>%
+  mutate(
+    id_intervention = as.character(id_intervention),
+    id_patient = as.character(id_patient),
+    categorie_age_adulte = as.factor(categorie_age_adulte),
+    sexe = as.factor(sexe),
+    categorie_imc_adulte = as.factor(categorie_imc_adulte),
+    asa = as.factor(asa),
+    urgence = as.factor(urgence),
+    sexe = as.factor(sexe),
+    lib_diagnostic = as.factor(lib_diagnostic),
+    entree_urgences = as.factor(entree_urgences),
+    rea_post_op = as.factor(rea_post_op),
+    rea_si_post_op = as.factor(rea_si_post_op),
+    dobutamine = as.factor(dobutamine),
+    ephedrine = as.factor(ephedrine),
+    noradrenaline = as.factor(noradrenaline),
+    phenylephrine = as.factor(phenylephrine),
+    cancer = as.factor(cancer),
+    catecholamine = as.factor(catecholamine))
+
+## Caractérisation / représentation graphique pour représenter notre échantillon
+
+summary(data_cancer)
+
+ggplot(data_cancer, aes(y = age)) +
+  geom_boxplot()
+
+ggplot(data_cancer, aes(y = poids)) +
+  geom_boxplot()
+
+ggplot(data_cancer, aes(y = imc)) +
+  geom_boxplot()
+
+# Recherche de facteurs associés à réanimation ou durée de séjour de séjour plus longue dans cancer
+
+## Test de variables qualitatives associés à rea_post_op
+
+ggplot (data_cancer, aes(x = sexe, fill = rea_post_op)) +
+  geom_bar (position = "fill")
+tbl = table(data_cancer$sexe, data_cancer$rea_post_op) # Bon test ??
+chisq.test(tbl)
+
+ggplot (data_cancer, aes(x = categorie_age_adulte, fill = rea_post_op)) +
+  geom_bar (position = "fill")
+tbl = table(data_cancer$categorie_age_adulte, data_cancer$rea_post_op) # Bon test ??
+chisq.test(tbl)
+
+ggplot (data_cancer, aes(x = categorie_imc_adulte, fill = rea_post_op)) +
+  geom_bar (position = "fill")
+tbl = table(data_cancer$categorie_imc_adulte, data_cancer$rea_post_op)
+chisq.test(tbl)
+
+ggplot (data_cancer, aes(x = asa, fill = rea_post_op)) +
+  geom_bar (position = "fill")
+tbl = table(data_cancer$asa, data_cancer$rea_post_op)
+chisq.test(tbl)
+
+
+## Test correlation entre variables qualitatives et duree_sejour_interv
+
+ggplot(data_cancer, aes(x = age, y = duree_sejour_interv)) +
+  geom_point()
+cor.test(data_cancer$age, data_cancer$duree_bloc, method = "spearman", alternative= "less")
+
+ggplot(data_cancer, aes(x = imc, y = duree_sejour_interv)) +
+  geom_point()
+cor.test(data_cancer$age, data_cancer$duree_sejour_interv, method = "spearman", alternative= "less")
