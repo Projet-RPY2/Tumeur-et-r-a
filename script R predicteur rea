@@ -164,3 +164,62 @@ cor.test(data_cancer$age, data_cancer$duree_bloc, method = "spearman", alternati
 ggplot(data_cancer, aes(x = imc, y = duree_sejour_interv)) +
   geom_point()
 cor.test(data_cancer$age, data_cancer$duree_sejour_interv, method = "spearman", alternative= "less")
+
+
+
+
+#Regression logistique (seulement pour predire mais pas pour expliquer le lien entre les variables => test chi2)
+#on supprime les lignes avec des NA 
+
+sum(is.na(data_cancer$rea_post_op))
+sum(is.na(data_cancer$imc))
+sum(is.na(data_cancer$sexe))
+
+data_cancer_na = data_cancer%>%
+  na.omit()
+
+#creation du modele 
+library(MASS)
+modele1 = glm(formula=data_cancer_na$rea_post_op~data_cancer_na$age + data_cancer_na$imc + data_cancer_na$scoreasa+ data_cancer_na$sexe+ data_cancer_na$urgence+ data_cancer_na$duree_bloc+data_cancer_na$total_remplissage+data_cancer_na$dobutamine+data_cancer_na$ephedrine+data_cancer_na$noradrenaline+data_cancer_na$phenylephrine+data_cancer_na$total_remplissage, family = "binomial", na.action = na.omit)
+?family.glm
+summary(model1)
+#AIC = 59940
+modele1$formula
+modele2 = step(modele1)
+summary(modele2)
+#AIC = 3774.4
+
+# step() choisi : age, scoreasa, urgence1, duree_bloc, total_remplissage, dobutamine1, ephedrine1, nora ...
+library("questionr")
+odds.ratio(modele2)
+
+#scoreasa, urgence, dobutamine, noradrenaline >>> 1 : facteur de risque d'entrée en réa_post_op 
+#sexeM < 1 : facteur de protection ??? (pas sûr)
+#duree_bloc, age, total_remplissage ~= 1 : pas d'impact sur l'entrée en réa 
+
+#forestplot 
+library(broom)
+graphfor <- tidy(modele2, conf.int = TRUE, exponentiate = TRUE)
+str(graphfor)
+library(ggplot2)
+ggplot(graphfor) +
+  aes(x = estimate, y = term, xmin = conf.low, xmax = conf.high) +
+  geom_vline(xintercept = 1) +
+  geom_errorbarh() +
+  geom_point() +
+  scale_x_log10()
+
+####################
+pi_hat = predict(modele2, newdata = data_cancer_na,
+             type = "response")
+
+boxplot(pi~data_cancer_na$rea_post_op, y)
+summary(data_cancer_na$sexe)
+summary(data_cancer_na$rea_post_op)
+#  F     M 
+#8211 12640
+length(data_cancer_na$rea_post_op)
+length(y)
+summary(data_cancer_na$asa)     #supprimer asa 4 et 5?
+# ASA1  ASA2  ASA3  ASA4  ASA5 
+# 4029 11044  5480   293     5 
