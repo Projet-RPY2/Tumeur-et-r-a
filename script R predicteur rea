@@ -55,6 +55,12 @@ for(i in 1:nrow(data)) {
   data$cancer[i] = as.integer(grepl("Cancer|cancer|Tumeur|tumeur", data$lib_diagnostic[i]))
 }
 
+#24795 observations commencant par C dans code_sscategorie   
+
+for(i in 1:nrow(data)) {
+  data$cancer[i] = as.integer(str_detect(data$code_sscategorie[i], "^C"))
+}
+
 # Caractérisation des échantillons obtenus
 
 ## nombre d'enregistrements et nombre de patients uniques associé à cancer/tumeur
