@@ -14,9 +14,14 @@ library(dplyr)
 
 install.packages("tidyr") # pour ordonner, ranger les données
 library(tidyr)
+install.packages("stringr")
+library(stringr)
 
 install.packages("ggplot2") # pour représentations graphiques
 library(ggplot2)
+
+install.packages("questionr") #pour odds-ratio
+library(questionr)
 
 library(MASS) # pour statistiques
 
