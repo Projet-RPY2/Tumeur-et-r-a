@@ -50,38 +50,35 @@ colnames(data)
 
 summary(as.factor(data$lib_diagnostic)) # permet de voir le nombre d'enregistrement correspondant à chaque diagnostique. Peut aider à choisir changer de pathologie pour le sujet si necessaire.
 
-# Selection de variables d'intérêt pour la suite du projet
-# data = dplyr::select(data, id_intervention, id_patient, age, poids, categorie_age_adulte, poids, imc, categorie_imc_adulte, asa, urgence, sexe, duree_bloc, lib_diagnostic, entree_urgences, duree_sejour_interv, dobutamine, ephedrine, noradrenaline, phenylephrine, total_remplissage)
-
 # ajout d'une variable == 1 pour cancer ou tumeur ou == 0 sinon
-unique(data$lib_diagnostic[grepl("Cancer|cancer|Tumeur|tumeur", data$lib_diagnostic)]) # 632 lib_diagnostic correspondant. 
+# unique(data$lib_diagnostic[grepl("Cancer|cancer|Tumeur|tumeur", data$lib_diagnostic)]) # 632 lib_diagnostic correspondant. 
 
-for(i in 1:nrow(data)) {
-  data$cancer[i] = as.integer(grepl("Cancer|cancer|Tumeur|tumeur", data$lib_diagnostic[i]))
-}
+# for(i in 1:nrow(data)) {
+#   data$cancer[i] = as.integer(grepl("Cancer|cancer|Tumeur|tumeur", data$lib_diagnostic[i]))
+# }
 
 #24795 observations commencant par C dans code_sscategorie   
 
 for(i in 1:nrow(data)) {
-  data$cancer[i] = as.integer(str_detect(data$code_sscategorie[i], "^C"))
+  data$cancer[i] = as.integer(str_detect(data$code_sscategorie[i], "^C")) # ajoute "1" dans la colonne cancer de chaque enregistrement si le code_sscategorie commençant par "C"
 }
 
 # Caractérisation des échantillons obtenus
 
 ## nombre d'enregistrements et nombre de patients uniques associé à cancer/tumeur
-sum(data$cancer == 1) #  28990 enregistrement
+sum(data$cancer == 1) #  28990 enregistrement si text-mining / 24795 enregistrements si selection par code_sscategorie 
 length(data$id_intervention[data$cancer == 1]) # idem
-length(unique(data$id_patient[data$cancer == 1])) # 21160 patientes uniques dans ces enregistrements
+length(unique(data$id_patient[data$cancer == 1])) # 21160 patientes uniques dans ces enregistrements / 17300 patients si selection par code_sscategorie 
 
 summary(data) # stats sur population
 summary(data[data$cancer == 1,],) # stats sur échantillons associés à cancer/tumeur
 
-## création d'une base de données ne contenant que les enregistrements et variables d'intérêt pour la suite de l'étude
+# création d'une base de données ne contenant que les enregistrements et variables d'intérêt pour la suite de l'étude
 # data_aomi = data[data$aomi == 1,]
 
 data_cancer = data %>%
   filter(cancer == 1) %>%
-  dplyr::select(id_intervention, id_patient, age, poids, categorie_age_adulte, poids, imc, categorie_imc_adulte, asa, urgence, sexe, duree_bloc, lib_diagnostic, entree_urgences, duree_sejour_interv, rea_post_op, rea_si_post_op, dobutamine, ephedrine, noradrenaline, phenylephrine, total_remplissage, cancer)
+  dplyr::select(id_intervention, id_patient, age, poids, categorie_age_adulte, poids, imc, categorie_imc_adulte, asa, urgence, sexe, duree_bloc, code_sscategorie, lib_sscategorie, lib_diagnostic, entree_urgences, rea_post_op, rea_si_post_op, duree_rea_post_op, dobutamine, ephedrine, noradrenaline, phenylephrine, total_remplissage, cancer)
 summary(data_cancer)
 
 ##  ajout de variables dans la base data_cancer
@@ -106,7 +103,8 @@ for(i in 1:nrow(data_cancer)) {
   data_cancer$catecholamine[i] = as.integer(data_cancer$dobutamine[i] == 1 |data_cancer$ephedrine[i] == 1 | data_cancer$noradrenaline[i] == 1 | data_cancer$phenylephrine[i] == 1)
 }
 
-# correction du type de variable # Je ne sais pas si c'est ce qu'il faut pour la suite
+# correction du type de variable (à priori important pour regression logistique)
+# Faut-il transformer poids, age, duree_rea_post_op en numrique  (plutôt que int) ?
 data_cancer = data_cancer %>%
   mutate(
     id_intervention = as.character(id_intervention),
@@ -117,6 +115,8 @@ data_cancer = data_cancer %>%
     asa = as.factor(asa),
     urgence = as.factor(urgence),
     sexe = as.factor(sexe),
+    code_sscategorie = as.factor(code_sscategorie),
+    lib_sscategorie = as.factor(lib_sscategorie),
     lib_diagnostic = as.factor(lib_diagnostic),
     entree_urgences = as.factor(entree_urgences),
     rea_post_op = as.factor(rea_post_op),
@@ -188,6 +188,9 @@ sum(is.na(data_cancer$sexe))
 
 data_cancer_na = data_cancer%>%
   na.omit()
+
+
+table(data_cancer_na$rea_post_op) # Nombre de patients avec et sans rea_post_op dans l'échantillon data_cancer_na
 
 #creation du modele 
 library(MASS)
