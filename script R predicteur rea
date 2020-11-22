@@ -51,62 +51,76 @@ colnames(data)
 summary(as.factor(data$lib_diagnostic)) # permet de voir le nombre d'enregistrement correspondant à chaque diagnostique. Peut aider à choisir changer de pathologie pour le sujet si necessaire.
 
 # ajout d'une variable == 1 pour cancer ou tumeur ou == 0 sinon
-# unique(data$lib_diagnostic[grepl("Cancer|cancer|Tumeur|tumeur", data$lib_diagnostic)]) # 632 lib_diagnostic correspondant. 
+unique(data$lib_diagnostic[grepl("Cancer|cancer|Tumeur|tumeur|carcinome|Carcinome", data$lib_diagnostic)]) # 679 lib_diagnostic correspondant. 
 
-# for(i in 1:nrow(data)) {
-#   data$cancer[i] = as.integer(grepl("Cancer|cancer|Tumeur|tumeur", data$lib_diagnostic[i]))
-# }
-
-#24795 observations commencant par C dans code_sscategorie   
 
 for(i in 1:nrow(data)) {
-  data$cancer[i] = as.integer(str_detect(data$code_sscategorie[i], "^C")) # ajoute "1" dans la colonne cancer de chaque enregistrement si le code_sscategorie commençant par "C"
+  data$cancer[i] = as.integer(grepl("Cancer|cancer|Tumeur|tumeur|carcinome|Carcinome", data$lib_diagnostic[i]))
 }
 
-# Caractérisation des échantillons obtenus
+#correction des valeurs abberantes
+#valeurs seuil a rajouter 
+data = data%>%
+  filter (data$duree_intervention>=0, 
+          data$duree_bloc>=0, 
+          data$duree_anesthesie>=0, 
+          data$duree_induction_incision>=0, 
+          data$duree_sejour_interv>=0, 
+          data$delai_entree_interv>=0, 
+          data$duree_rea_post_op>=0)
 
+filter(data$duree_intervention<=0, 
+       data$duree_bloc<=0, 
+       data$duree_anesthesie<=0, 
+       data$duree_induction_incision<=0, 
+       data$duree_sejour_interv<=0, 
+       data$delai_entree_interv<=0, 
+       data$duree_rea_post_op<=0)
+
+# imc < 15 ??
+#categorie_imc_adulte a corriger 
+
+
+
+
+
+data_cancer = data %>%
+  filter(str_detect(data$lib_diagnostic, "Cancer|cancer|Tumeur|tumeur|carcinome|Carcinome"))
+summary(data_cancer)
+
+
+# Caractérisation des échantillons obtenus
 ## nombre d'enregistrements et nombre de patients uniques associé à cancer/tumeur
-sum(data$cancer == 1) #  28990 enregistrement si text-mining / 24795 enregistrements si selection par code_sscategorie 
-length(data$id_intervention[data$cancer == 1]) # idem
-length(unique(data$id_patient[data$cancer == 1])) # 21160 patientes uniques dans ces enregistrements / 17300 patients si selection par code_sscategorie 
+nrow(data_cancer) #  32,232 enregistrement     
+length(data_cancer$id_intervention) # idem
+length(unique(data_cancer$id_patient)) # 23428 patientes uniques dans ces enregistrements 
 
 summary(data) # stats sur population
-summary(data[data$cancer == 1,],) # stats sur échantillons associés à cancer/tumeur
+summary(data_cancer) # stats sur échantillons associés à cancer/tumeur
 
 # création d'une base de données ne contenant que les enregistrements et variables d'intérêt pour la suite de l'étude
 # data_aomi = data[data$aomi == 1,]
 
-data_cancer = data %>%
-  filter(cancer == 1) %>%
-  dplyr::select(id_intervention, id_patient, age, poids, categorie_age_adulte, poids, imc, categorie_imc_adulte, asa, urgence, sexe, duree_bloc, code_sscategorie, lib_sscategorie, lib_diagnostic, entree_urgences, rea_post_op, rea_si_post_op, duree_rea_post_op, dobutamine, ephedrine, noradrenaline, phenylephrine, total_remplissage, cancer)
-summary(data_cancer)
+data_cancer1 = data_cancer%>%
+  dplyr::select (id_intervention, id_patient, age, poids, categorie_age_adulte, delai_entree_interv, imc, categorie_imc_adulte, asa, 
+                 categorie_asa, urgence, sexe, duree_intervention, duree_bloc, duree_anesthesie,rea_si_post_op,duree_induction_incision, 
+                 lib_diagnostic, duree_sejour_interv, deces_sejour_interv, duree_rea_post_op, moy_pnim_bloc_induc, 
+                 moy_pnim_anesth, dobutamine, ephedrine, noradrenaline, moy_vce_chir_poids_ideal,phenylephrine, total_remplissage, entree_urgences)
+
+summary(data_cancer1)
 
 ##  ajout de variables dans la base data_cancer
-
-## ajout d'une variable correspondant au score ASA
-for(i in 1:nrow(data_cancer)) {
-  if (data_cancer$asa[i] == "ASA1") {
-    data_cancer$scoreasa[i] = 1 
-  } else if(data_cancer$asa[i] == "ASA2") {
-    data_cancer$scoreasa[i] = 2
-  } else if(data_cancer$asa[i] == "ASA3")  {
-    data_cancer$scoreasa[i] = 3
-  } else if(data_cancer$asa[i] == "ASA4") {
-    data_cancer$scoreasa[i] = 4
-  } else if(data_cancer$asa[i] == "ASA5") {
-    data_cancer$scoreasa[i] = 5
-  }
-}
-
 ## ajout d'une variable == 1 pour usage catécholamine
-for(i in 1:nrow(data_cancer)) {
-  data_cancer$catecholamine[i] = as.integer(data_cancer$dobutamine[i] == 1 |data_cancer$ephedrine[i] == 1 | data_cancer$noradrenaline[i] == 1 | data_cancer$phenylephrine[i] == 1)
+for(i in 1:nrow(data_cancer1)) {
+  data_cancer1$catecholamine[i] = as.integer(data_cancer$dobutamine[i] == 1 |data_cancer$ephedrine[i] == 1 | data_cancer$noradrenaline[i] == 1 | data_cancer$phenylephrine[i] == 1)
 }
+
 
 # correction du type de variable (à priori important pour regression logistique)
 # Faut-il transformer poids, age, duree_rea_post_op en numrique  (plutôt que int) ?
-data_cancer = data_cancer %>%
-  mutate(
+# correction du type de variable # Je ne sais pas si c'est ce qu'il faut pour la suite
+data_cancer1 %>%
+  dplyr::mutate(
     id_intervention = as.character(id_intervention),
     id_patient = as.character(id_patient),
     categorie_age_adulte = as.factor(categorie_age_adulte),
@@ -115,66 +129,61 @@ data_cancer = data_cancer %>%
     asa = as.factor(asa),
     urgence = as.factor(urgence),
     sexe = as.factor(sexe),
-    code_sscategorie = as.factor(code_sscategorie),
-    lib_sscategorie = as.factor(lib_sscategorie),
     lib_diagnostic = as.factor(lib_diagnostic),
     entree_urgences = as.factor(entree_urgences),
-    rea_post_op = as.factor(rea_post_op),
     rea_si_post_op = as.factor(rea_si_post_op),
     dobutamine = as.factor(dobutamine),
     ephedrine = as.factor(ephedrine),
     noradrenaline = as.factor(noradrenaline),
     phenylephrine = as.factor(phenylephrine),
-    cancer = as.factor(cancer),
     catecholamine = as.factor(catecholamine))
 
 ## Caractérisation / représentation graphique pour représenter notre échantillon
 
-summary(data_cancer)
+summary(data_cancer1)
 
-ggplot(data_cancer, aes(y = age)) +
+ggplot(data_cancer1, aes(y = age)) +
   geom_boxplot()
 
-ggplot(data_cancer, aes(y = poids)) +
+ggplot(data_cancer1, aes(y = poids)) +
   geom_boxplot()
 
-ggplot(data_cancer, aes(y = imc)) +
+ggplot(data_cancer1, aes(y = imc)) +
   geom_boxplot()
-
 # Recherche de facteurs associés à réanimation ou durée de séjour de séjour plus longue dans cancer
 
 ## Test de variables qualitatives associés à rea_post_op
 
-ggplot (data_cancer, aes(x = sexe, fill = rea_post_op)) +
+ggplot (data_cancer1, aes(x = sexe, fill = rea_si_post_op)) +
   geom_bar (position = "fill")
-tbl = table(data_cancer$sexe, data_cancer$rea_post_op) # Bon test ??
+tbl = table(data_cancer1$sexe, data_cancer1$rea_si_post_op) # Bon test ??
 chisq.test(tbl)
 
-ggplot (data_cancer, aes(x = categorie_age_adulte, fill = rea_post_op)) +
+ggplot (data_cancer1, aes(x = categorie_age_adulte, fill = rea_si_post_op)) +
   geom_bar (position = "fill")
-tbl = table(data_cancer$categorie_age_adulte, data_cancer$rea_post_op) # Bon test ??
+tbl = table(data_cancer1$categorie_age_adulte, data_cancer1$rea_si_post_op) # Bon test ??
 chisq.test(tbl)
 
-ggplot (data_cancer, aes(x = categorie_imc_adulte, fill = rea_post_op)) +
+ggplot (data_cancer1, aes(x = categorie_imc_adulte, fill = rea_si_post_op)) +
   geom_bar (position = "fill")
-tbl = table(data_cancer$categorie_imc_adulte, data_cancer$rea_post_op)
+tbl = table(data_cancer1$categorie_imc_adulte, data_cancer1$rea_si_post_op)
 chisq.test(tbl)
 
-ggplot (data_cancer, aes(x = asa, fill = rea_post_op)) +
+ggplot (data_cancer1, aes(x = asa, fill = rea_post_si_op)) +
   geom_bar (position = "fill")
-tbl = table(data_cancer$asa, data_cancer$rea_post_op)
+tbl = table(data_cancer1$asa, data_cancer1$rea_si_post_op)
 chisq.test(tbl)
 
 
 ## Test correlation entre variables qualitatives et duree_sejour_interv
 
-ggplot(data_cancer, aes(x = age, y = duree_sejour_interv)) +
+ggplot(data_cancer1, aes(x = age, y = duree_sejour_interv)) +
   geom_point()
-cor.test(data_cancer$age, data_cancer$duree_bloc, method = "spearman", alternative= "less")
+cor.test(data_cancer1$age, data_cancer1$duree_bloc, method = "spearman", alternative= "less")
 
-ggplot(data_cancer, aes(x = imc, y = duree_sejour_interv)) +
+ggplot(data_cancer1, aes(x = imc, y = duree_sejour_interv)) +
   geom_point()
-cor.test(data_cancer$age, data_cancer$duree_sejour_interv, method = "spearman", alternative= "less")
+cor.test(data_cancer1$age, data_cancer1$duree_sejour_interv, method = "spearman", alternative= "less")
 
 
 
@@ -182,19 +191,20 @@ cor.test(data_cancer$age, data_cancer$duree_sejour_interv, method = "spearman", 
 #Regression logistique (seulement pour predire mais pas pour expliquer le lien entre les variables => test chi2)
 #on supprime les lignes avec des NA 
 
-sum(is.na(data_cancer$rea_post_op))
-sum(is.na(data_cancer$imc))
-sum(is.na(data_cancer$sexe))
+sum(is.na(data_cancer1$rea_si_post_op))
+sum(is.na(data_cancer1$imc))
+sum(is.na(data_cancer1$sexe))
 
-data_cancer_na = data_cancer%>%
+data_cancer_na = data_cancer1%>%
   na.omit()
-
 
 table(data_cancer_na$rea_post_op) # Nombre de patients avec et sans rea_post_op dans l'échantillon data_cancer_na
 
 #creation du modele 
 library(MASS)
-modele1 = glm(formula=data_cancer_na$rea_post_op~data_cancer_na$age + data_cancer_na$imc + data_cancer_na$scoreasa+ data_cancer_na$sexe+ data_cancer_na$urgence+ data_cancer_na$duree_bloc+data_cancer_na$total_remplissage+data_cancer_na$dobutamine+data_cancer_na$ephedrine+data_cancer_na$noradrenaline+data_cancer_na$phenylephrine+data_cancer_na$total_remplissage, family = "binomial", na.action = na.omit)
+modele1 = glm(formula=data_cancer_na$rea_si_post_op ~ data_cancer_na$age + 
+                data_cancer_na$imc + data_cancer_na$asa+ data_cancer_na$sexe+ data_cancer_na$urgence+ 
+                data_cancer_na$delai_entree_interv+data_cancer_na$categorie_imc_adulte, family = "binomial", na.action = na.omit)
 ?family.glm
 summary(model1)
 #AIC = 59940
