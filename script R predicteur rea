@@ -25,7 +25,8 @@ library(questionr)
 
 library(MASS) # pour statistiques
 
-# Définition des chemins d'accès
+---------------------------
+## Définition des chemins d'accès
 
 path_import = "/Users/karimbelarbi/Google_Drive/M1_Data_Science_en_Santé/Djamel Zitouni/Projet rpy2"
 
@@ -37,9 +38,11 @@ data_raw = read.csv2(file.path(path_import, "export_data_1.csv"), dec = ",", hea
 # Création d'une copie du fichier sur lesquel travailler
 data = data_raw
 
-# Première exploration des données
+--------------------------
+## Première exploration des données
 head(data)
 str(data) # 299466 obs. of  130 variables # il faudrait pouvoir compter le nb de variables int et num.
+summary(data) # stats sur population
 
 # noms de colonnes en minuscules
 colnames(data) = tolower(colnames(data))
@@ -50,67 +53,55 @@ colnames(data)
 
 summary(as.factor(data$lib_diagnostic)) # permet de voir le nombre d'enregistrement correspondant à chaque diagnostique. Peut aider à choisir changer de pathologie pour le sujet si necessaire.
 
-# ajout d'une variable == 1 pour cancer ou tumeur ou == 0 sinon
 unique(data$lib_diagnostic[grepl("Cancer|cancer|Tumeur|tumeur|carcinome|Carcinome", data$lib_diagnostic)]) # 679 lib_diagnostic correspondant. 
 
-
-for(i in 1:nrow(data)) {
-  data$cancer[i] = as.integer(grepl("Cancer|cancer|Tumeur|tumeur|carcinome|Carcinome", data$lib_diagnostic[i]))
-}
-
-#correction des valeurs abberantes
-#valeurs seuil a rajouter 
-data = data%>%
-  filter (data$duree_intervention>=0, 
-          data$duree_bloc>=0, 
-          data$duree_anesthesie>=0, 
-          data$duree_induction_incision>=0, 
-          data$duree_sejour_interv>=0, 
-          data$delai_entree_interv>=0, 
-          data$duree_rea_post_op>=0)
-
-filter(data$duree_intervention<=0, 
-       data$duree_bloc<=0, 
-       data$duree_anesthesie<=0, 
-       data$duree_induction_incision<=0, 
-       data$duree_sejour_interv<=0, 
-       data$delai_entree_interv<=0, 
-       data$duree_rea_post_op<=0)
-
-# imc < 15 ??
-#categorie_imc_adulte a corriger 
-
-
-
-
+-------
+## Sélection des lignes d'intérêt : population opérée d'une chirurgie carcinologique :
+unique(data$lib_diagnostic[grepl("Cancer|cancer|Tumeur|tumeur|carcinome|Carcinome", data$lib_diagnostic)]) # 679 diagnostics de chirurgie carcinologique
+unique(data$lib_diagnostic[grepl("Tumeur maligne", data$lib_diagnostic)]) # 316 diagnostics de tumeurs malignes
 
 data_cancer = data %>%
   filter(str_detect(data$lib_diagnostic, "Cancer|cancer|Tumeur|tumeur|carcinome|Carcinome"))
 summary(data_cancer)
 
-
 # Caractérisation des échantillons obtenus
-## nombre d'enregistrements et nombre de patients uniques associé à cancer/tumeur
 nrow(data_cancer) #  32,232 enregistrement     
 length(data_cancer$id_intervention) # idem
 length(unique(data_cancer$id_patient)) # 23428 patientes uniques dans ces enregistrements 
 
-summary(data) # stats sur population
 summary(data_cancer) # stats sur échantillons associés à cancer/tumeur
 
-# création d'une base de données ne contenant que les enregistrements et variables d'intérêt pour la suite de l'étude
-# data_aomi = data[data$aomi == 1,]
-
+# Option annexe, création d'une nouvelle colonne cancer : 
+for(i in 1:nrow(data)) {
+  data$cancer[i] = as.integer(grepl("Cancer|cancer|Tumeur|tumeur|carcinome|Carcinome", data$lib_diagnostic[i]))
+}
+-------
+## Sélection des variables d'intérêt et création du dataframe de l'étude = data_cancer1 : 
 data_cancer1 = data_cancer%>%
-  dplyr::select (id_intervention, id_patient, age, poids, categorie_age_adulte, delai_entree_interv, imc, categorie_imc_adulte, asa, 
-                 categorie_asa, urgence, sexe, duree_intervention, duree_bloc, duree_anesthesie,rea_si_post_op,duree_induction_incision, 
-                 lib_diagnostic, duree_sejour_interv, deces_sejour_interv, duree_rea_post_op, moy_pnim_bloc_induc, 
-                 moy_pnim_anesth, dobutamine, ephedrine, noradrenaline, moy_vce_chir_poids_ideal,phenylephrine, total_remplissage, entree_urgences)
+  dplyr::select (id_intervention, id_patient, rea_si_post_op, lib_diagnostic, age, categorie_age_adulte, poids, imc, categorie_imc_adulte, delai_entree_interv, asa, 
+                 categorie_asa, urgence, entree_urgences, sexe, duree_intervention, duree_bloc, duree_anesthesie, duree_induction_incision, duree_sejour_interv, duree_rea_post_op, deces_sejour_interv, moy_pnim_bloc_induc, 
+                 moy_pnim_anesth, dobutamine, ephedrine, noradrenaline, phenylephrine, moy_vce_chir_poids_ideal, total_remplissage)
 
 summary(data_cancer1)
+------
+## Nettoyage de la base de donnée : 
+  #correction des valeurs abberantes
+#? categorie_imc_adulte a corriger ? 
 
-##  ajout de variables dans la base data_cancer
-## ajout d'une variable == 1 pour usage catécholamine
+data_cancer1 = data_cancer1%>%
+  filter (data_cancer1$poids>=0 & data_cancer1$poids<=250, 
+          data_cancer1$imc >= 5 & data_cancer1$imc <= 75, 
+          data_cancer1$delai_entree_interv >=0 & data_cancer1$delai_entree_interv<=60, # le délai a été mis à deux mois de manière complètement aléatoire
+          data_cancer1$duree_intervention >= 15 & data_cancer1$duree_intervention <= 1440, # une intervention dure moins de 24h
+          data_cancer1$duree_bloc >= 15 & data_cancer1$duree_bloc <= 1440,
+          data_cancer1$duree_anesthesie>=0 & data_cancer1$duree_anesthesie <= 1440,
+          data_cancer1$duree_induction_incision >= 0,
+          data_cancer1$moy_vce_chir_poids_ideal>=0) #0 est une valeur plausible en cas d'ALR 
+
+# Au total : 11403 lignes et 30 variables. 
+
+## Ajout de variables dans la base data_cancer
+# ajout d'une variable == 1 pour usage catécholamine
 for(i in 1:nrow(data_cancer1)) {
   data_cancer1$catecholamine[i] = as.integer(data_cancer$dobutamine[i] == 1 |data_cancer$ephedrine[i] == 1 | data_cancer$noradrenaline[i] == 1 | data_cancer$phenylephrine[i] == 1)
 }
