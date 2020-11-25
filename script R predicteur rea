@@ -102,10 +102,8 @@ data_cancer1 = data_cancer1%>%
 
 ## Ajout de variables dans la base data_cancer
 # ajout d'une variable == 1 pour usage catécholamine
-for(i in 1:nrow(data_cancer1)) {
-  data_cancer1$catecholamine[i] = as.integer(data_cancer$dobutamine[i] == 1 |data_cancer$ephedrine[i] == 1 | data_cancer$noradrenaline[i] == 1 | data_cancer$phenylephrine[i] == 1)
-}
-
+data_cancer1 <- data_cancer1 %>%
+  mutate(catecholamine = ifelse(((dobutamine == 0) & (ephedrine == 0) & (noradrenaline == 0) & (phenylephrine == 0)), 0, 1))
 
 # correction du type de variable (à priori important pour regression logistique)
 # Faut-il transformer poids, age, duree_rea_post_op en numrique  (plutôt que int) ?
@@ -175,8 +173,6 @@ cor.test(data_cancer1$age, data_cancer1$duree_bloc, method = "spearman", alterna
 ggplot(data_cancer1, aes(x = imc, y = duree_sejour_interv)) +
   geom_point()
 cor.test(data_cancer1$age, data_cancer1$duree_sejour_interv, method = "spearman", alternative= "less")
-
-
 
 
 #Regression logistique (seulement pour predire mais pas pour expliquer le lien entre les variables => test chi2)
