@@ -144,3 +144,11 @@ min(data_cancer['POIDS'])
 
 # Ajout de nouvelles variables
 
+data_cancer['CATHECOLAMINE'] = (data_cancer['DOBUTAMINE'] == 1) | (data_cancer['EPHEDRINE'] == 1) | (data_cancer['NORADRENALINE'] == 1) | (data_cancer['PHENYLEPHRINE'] == 1)
+# pandas.unique(data_cancer['CATHECOLAMINE'])
+# data_cancer.columns
+# catecho = data_cancer['CATHECOLAMINE']
+# catecho[1:10]
+
+
+
