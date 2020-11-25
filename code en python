@@ -13,8 +13,14 @@ os.chdir("/Users/karimbelarbi/Google_Drive/M1_Data_Science_en_Santé/Djamel Zit
 # Installation de rpy2 et de panda
 pip install rpy2
 import rpy2
+from rpy2 import robjects
+from rpy2.robjects.packages import importr # permettra d'importer la librairie
 
 import numpy
+
+%matplotlib inline
+pip install plotnine # pour ggplot2
+import plotnine 
 
 pip install pandas
 import pandas
@@ -73,6 +79,7 @@ list(data_cancer) # pour avoir les noms de colonnes
 # data_cancer = data_cancer.dropna() # Elimine toutes les interventions avec un NA n'importe ou. On perd trop de lignes
 data_cancer = data_cancer.fillna(-1) # on remplie les champs NA par -1
 
+data_cancer.columns
 data_cancer.dtypes # Affichage des types de variables
 
 convert_dict = {'ID_INTERVENTION': int, 
@@ -146,9 +153,26 @@ min(data_cancer['POIDS'])
 
 data_cancer['CATHECOLAMINE'] = (data_cancer['DOBUTAMINE'] == 1) | (data_cancer['EPHEDRINE'] == 1) | (data_cancer['NORADRENALINE'] == 1) | (data_cancer['PHENYLEPHRINE'] == 1)
 # pandas.unique(data_cancer['CATHECOLAMINE'])
-# data_cancer.columns
-# catecho = data_cancer['CATHECOLAMINE']
-# catecho[1:10]
+
+## Vérification de la nouvelle variable "CATHECOLAMINE"
+data_cancer[['DOBUTAMINE', 'EPHEDRINE', 'NORADRENALINE', 'PHENYLEPHRINE', 'CATHECOLAMINE']].head(50)
+
+# Data visualization
+# from plotnine import *
+# Pour faire tous les graphs de variables en fonction de rea_si_post_op
+for i in data_cancer.columns:
+    if data_cancer[i].dtypes == int or data_cancer[i].dtypes == float:
+        a = (plotnine.ggplot(data=data_cancer, # utilisation du dataset data_cancer
+           mapping=plotnine.aes(x='REA_SI_POST_OP', y = i)) # definition de la variable à représenter en y
+             + plotnine.geom_boxplot())  
+    elif data_cancer[i].dtypes == object or data_cancer[i].dtypes == bool:
+        a = (plotnine.ggplot(data=data_cancer, # utilisation du dataset data_cancer
+           mapping=plotnine.aes(x='REA_SI_POST_OP', fill = i)) # definition de la variable à représenter en y
+             + plotnine.geom_bar(position = "fill"))
+        print(a)
+        
+        
+# Tests statistiques sur variables en fonction de rea_si_post_op:
 
 
 
