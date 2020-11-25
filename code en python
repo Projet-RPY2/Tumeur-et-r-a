@@ -172,7 +172,18 @@ for i in data_cancer.columns:
         print(a)
         
         
-# Tests statistiques sur variables en fonction de rea_si_post_op:
+# Pour faire analyses statistiques de variables en fonction de rea_si_post_op dans R
+# Test Chi2 d'homogénéité
+# HO = hypothèse de distribution identique de la variable entre groupes REA_SI_POST_OP ou non REA_SI_POST_OP
+# H1 = distribution différente de la variable  entre groupes REA_SI_POST_OP ou non REA_SI_POST_OP
+
+# Importation de data_cancer dans R
+data_cancer.to_csv('data_cancer4.csv')  # exportation du fichier en format csv # # A VERIFIER
+
+robjects.r('path = "/Users/karimbelarbi/Google_Drive/M1_Data_Science_en_Santé/Djamel Zitouni/Projet rpy2/"')
+robjects.r("data_cancer = read.csv2('export_data_1.csv', dec = ',', header = TRUE, encoding = 'latin1', sep = ';')")  # A VERIFIER
+
+# ENSUITE JE PENSE FAIRE LES COMMANDES R POUR CHI2 PUIS POUR REGRESSION LOGISTIQUE.
 
 
 
