@@ -14,19 +14,43 @@ os.chdir("/Users/karimbelarbi/Google_Drive/M1_Data_Science_en_Santé/Djamel Zit
 pip install rpy2
 import rpy2
 
+import numpy
+
 pip install pandas
 import pandas
 
-# Chargement de la base de données en utilisant panda
+# Chargement du fichier
+from rpy2 import robjects
+data = robjects.DataFrame.from_csvfile("export_data_1.csv", header = True, sep = ";", dec = ",")
+
+# importation données en utilisant panda
 data_pd = pandas.read_csv("export_data_1.csv", delimiter = ";", decimal = ",", encoding = "latin-1")
 data_pd.head
 
 # Première exploration du fichier data
 
-data_pd.nrow
-data_pd.ncol
+data.nrow
+data.ncol
 data_pd.shape # pour voir dimension 299466 x 130
 print(robjects.r.str(data))
+
+# [column.rclass[0] for column in data]
+
+print(data.colnames)
+#print(data.rx(1, True))
+# print(robjects.r.str(data))
+# print(robjects.r.str(df))
+#x = data.rx(10, True)
+# print(x.rx2('POIDS_IDEAL')[0])
+# robjects.r.mean(data[2])
+# robjects.r.sd(data[2])
+# rows_i = robjects.IntVector(range(1,5))
+# subdata = data.rx(rows_i, True)
+# print(subdata.nrow)
+
+# subdata.to_csvfile(path = "export_data20.Csv", quote = True, sep = ";", eol='\n', na = 'NA', dec = ',', row_names = RTrue, qmethod = 'escape'', append = False')
+# Enregistrement d'un sous fichier
+
 
 # Extraction des interventions liées à des chirurgies carcinologiques
 
@@ -88,4 +112,35 @@ print(data_cancer.dtypes)
 data_cancer.shape # on a toujours dimensions 32232 x 28
 
 # Traitement des valeurs aberrantes
+
+max(data_cancer['POIDS'])
+min(data_cancer['POIDS'])
+
+data_cancer.loc[data_cancer['POIDS'] < 0, 'POIDS'] = numpy.nan
+data_cancer.loc[data_cancer['POIDS'] > 250, 'POIDS'] = numpy.nan
+
+data_cancer.loc[data_cancer['IMC'] < 5, 'IMC'] = numpy.nan
+data_cancer.loc[data_cancer['IMC'] > 75, 'IMC'] = numpy.nan
+
+data_cancer.loc[data_cancer['DELAI_ENTREE_INTERV'] < 0, 'DELAI_ENTREE_INTERV'] = numpy.nan
+data_cancer.loc[data_cancer['DELAI_ENTREE_INTERV'] > 60, 'DELAI_ENTREE_INTERV'] = numpy.nan
+
+data_cancer.loc[data_cancer['DUREE_INTERVENTION'] < 15, 'DUREE_INTERVENTION'] = numpy.nan
+data_cancer.loc[data_cancer['DUREE_INTERVENTION'] > 1440, 'DUREE_INTERVENTION'] = numpy.nan
+
+data_cancer.loc[ data_cancer['DUREE_BLOC'] < 15, 'DUREE_BLOC'] = numpy.nan
+data_cancer.loc[ data_cancer['DUREE_BLOC'] > 1440, 'DUREE_BLOC'] = numpy.nan
+
+data_cancer.loc[data_cancer['DUREE_ANESTHESIE'] < 0, 'DUREE_ANESTHESIE'] = numpy.nan
+data_cancer.loc[data_cancer['DUREE_ANESTHESIE'] > 1440, 'DUREE_ANESTHESIE'] = numpy.nan
+
+data_cancer.loc[ data_cancer['DUREE_INDUCTION_INCISION'] < 0, 'DUREE_INDUCTION_INCISION'] = numpy.nan
+
+data_cancer.loc[ data_cancer['MOY_VCE_CHIR_POIDS_IDEAL'] < 0, 'MOY_VCE_CHIR_POIDS_IDEAL'] = numpy.nan
+
+max(data_cancer['POIDS'])
+min(data_cancer['POIDS'])
+
+
+# Ajout de nouvelles variables
 
