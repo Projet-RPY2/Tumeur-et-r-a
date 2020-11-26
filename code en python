@@ -186,13 +186,45 @@ for i in data_cancer.columns:
         
 # Pour faire analyses statistiques de variables en fonction de rea_si_post_op dans R
 
-# Export de data_cancer sous forme de csv puis importation dans R via rpy2
+# Export de data_cancer sous forme de csv 
 data_cancer.to_csv('data_cancer_export.csv', sep = ';', decimal = ',', header = True, encoding = 'latin-1')  # exportation du fichier en format csv
 
+# Importation de data_cancer dans R via rpy2
 robjects.r("path = '/Users/karimbelarbi/Google_Drive/M1_Data_Science_en_Santé/Djamel Zitouni/Projet rpy2/'")
 robjects.r("read.csv2(file.path(path, 'data_cancer_export.csv'), sep = ';', dec = ',', header = TRUE, encoding = 'latin1')")
 
+# Correction des types de variables
+robjects.r("""data_cancer$ID_INTERVENTION = as.character(data_cancer$ID_INTERVENTION)
+data_cancer$ID_PATIENT = as.character(data_cancer$ID_PATIENT)
+data_cancer$AGE = as.numeric(data_cancer$AGE)
+data_cancer$CATEGORIE_AGE_ADULTE = as.factor(data_cancer$CATEGORIE_AGE_ADULTE)
+data_cancer$POIDS = as.integer(data_cancer$POIDS)
+data_cancer$IMC = as.integer(data_cancer$IMC)
+data_cancer$CATEGORIE_IMC_ADULTE = as.factor(data_cancer$CATEGORIE_IMC_ADULTE)
+data_cancer$CATEGORIE_ASA = as.factor(data_cancer$CATEGORIE_ASA)
+data_cancer$URGENCE = as.factor(data_cancer$URGENCE)
+data_cancer$SEXE = as.character(data_cancer$SEXE)
+data_cancer$DUREE_INTERVENTION = as.integer(data_cancer$DUREE_INTERVENTION)
+data_cancer$DUREE_BLOC = as.integer(data_cancer$DUREE_BLOC)
+data_cancer$DUREE_ANESTHESIE = as.integer(as.integer(data_cancer$DUREE_ANESTHESIE))
+data_cancer$DUREE_INDUCTION_INCISION = as.integer(data_cancer$DUREE_INDUCTION_INCISION)
+data_cancer$LIB_DIAGNOSTIC = as.factor(data_cancer$LIB_DIAGNOSTIC)
+data_cancer$ENTREE_URGENCES = as.factor(data_cancer$ENTREE_URGENCES)
+data_cancer$DUREE_SEJOUR_INTERV = as.integer(data_cancer$DUREE_SEJOUR_INTERV)
+data_cancer$DELAI_ENTREE_INTERV = as.integer(data_cancer$DELAI_ENTREE_INTERV)
+data_cancer$DECES_SEJOUR_INTERV = as.factor(data_cancer$DECES_SEJOUR_INTERV)
+data_cancer$REA_SI_POST_OP = as.factor(data_cancer$REA_SI_POST_OP)
+data_cancer$MOY_PNIM_BLOC_INDUC = as.numeric(data_cancer$MOY_PNIM_BLOC_INDUC)
+data_cancer$MOY_PNIM_ANESTH = as.numeric(data_cancer$MOY_PNIM_ANESTH)
+data_cancer$MOY_VCE_CHIR_POIDS_IDEAL  = as.numeric(data_cancer$MOY_VCE_CHIR_POIDS_IDEAL)
+data_cancer$TOTAL_REMPLISSAGE = as.numeric(data_cancer$TOTAL_REMPLISSAGE)
+data_cancer$CATHECOLAMINE = as.factor(data_cancer$CATHECOLAMINE)""")
 
+robjects.r("str(data_cancer)")
+# Creation de deux dataframe en fonction de passage ou non en réanimation
+robjects.r("data_cancer_rea = subset(data_cancer,  REA_SI_POST_OP == 'True')")
+robjects.r("data_cancer_nonrea = subset(data_cancer,  REA_SI_POST_OP == 'False')")
+       
 # Analyse statistique
 # Test Chi2 d'homogénéité
 # HO = hypothèse de distribution identique de la variable entre groupes REA_SI_POST_OP ou non REA_SI_POST_OP
