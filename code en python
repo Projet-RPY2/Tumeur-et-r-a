@@ -165,6 +165,10 @@ data_cancer['CATHECOLAMINE'] = (data_cancer['DOBUTAMINE'] == 1) | (data_cancer['
 ## Vérification de la nouvelle variable "CATHECOLAMINE"
 data_cancer[['DOBUTAMINE', 'EPHEDRINE', 'NORADRENALINE', 'PHENYLEPHRINE', 'CATHECOLAMINE']].head(50)
 
+## Elimination des colonnes 'DOBUTAMINE', 'EPHEDRINE', 'NORADRENALINE', 'PHENYLEPHRINE'
+data_cancer = data_cancer.drop(['DOBUTAMINE',  'EPHEDRINE', 'NORADRENALINE', 'PHENYLEPHRINE'], 1) # 1 pour colonnes
+
+
 # Data visualization
 # from plotnine import *
 
