@@ -192,6 +192,12 @@ for i in data_cancer.drop(['ID_INTERVENTION', 'ID_PATIENT'], axis = 1).columns: 
              + plotnine.ylab(str(i.lower()))
              + plotnine.theme_538()).save(filename=i)
 
+        
+# Obtenir les médianes et premier et troisième quartiles pour les variables quantitatives 
+data_cancer_distribution = data_cancer.groupby("REA_SI_POST_OP").quantile([0.25, 0.50, 0.75])
+data_cancer_distribution.to_csv('data_cancer_distribution_export.csv', sep = ';', decimal = ',', header = True, encoding = 'latin-1') # exportation du fichier
+   
+    
 # Pour faire analyses statistiques de variables en fonction de rea_si_post_op dans R
 
 # Export de data_cancer sous forme de csv 
