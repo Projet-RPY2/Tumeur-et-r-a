@@ -18,15 +18,17 @@ from rpy2.robjects.packages import importr # permettra d'importer la librairie
 
 import numpy
 
-%matplotlib inline
-pip install plotnine # pour ggplot2
+# %matplotlib inline # pour ggplot2
+pip install plotnine
 import plotnine 
 
 pip install pandas
 import pandas
 
+# importr("MASS")
+
+
 # Chargement du fichier
-from rpy2 import robjects
 data = robjects.DataFrame.from_csvfile("export_data_1.csv", header = True, sep = ";", dec = ",")
 
 # importation données en utilisant panda
@@ -62,6 +64,10 @@ print(data.colnames)
 
 print(data_pd["LIB_DIAGNOSTIC"])
 data_cancer = data_pd[data_pd['LIB_DIAGNOSTIC'].str.contains('cancer|tumeur|carcinome', case = False, na= False)]
+    
+set(data_cancer["LIB_DIAGNOSTIC"]) # pour vérifier les lib_diagnostics selectionnés
+len(set(data_cancer["LIB_DIAGNOSTIC"])) # un total de 679 lib_diagnostics différents.
+
 data_cancer.shape # pour avoir les dimensions 32232 x 130
 list(data_cancer) # pour avoir les noms de colonnes
 
@@ -79,10 +85,10 @@ list(data_cancer) # pour avoir les noms de colonnes
 # data_cancer = data_cancer.dropna() # Elimine toutes les interventions avec un NA n'importe ou. On perd trop de lignes
 data_cancer = data_cancer.fillna(-1) # on remplie les champs NA par -1
 
-data_cancer.columns
+data_cancer.columns # Affichage des variables
 data_cancer.dtypes # Affichage des types de variables
 
-convert_dict = {'ID_INTERVENTION': int, 
+convert_dict = {'ID_INTERVENTION': int, # création d'un dictionnaire attribuant à chaque colonne un type de valeurs
                 'ID_PATIENT': int,
                 'AGE': int,
                 'CATEGORIE_AGE_ADULTE' : int,
@@ -117,6 +123,8 @@ data_cancer = data_cancer.astype(convert_dict)
 data_cancer = data_cancer.replace('-1', 'NA') # On remets les -1 en NA
 print(data_cancer.dtypes) 
 data_cancer.shape # on a toujours dimensions 32232 x 28
+
+pandas.unique(data_cancer['CATEGORIE_ASA'])
 
 # Traitement des valeurs aberrantes
 
@@ -159,16 +167,20 @@ data_cancer[['DOBUTAMINE', 'EPHEDRINE', 'NORADRENALINE', 'PHENYLEPHRINE', 'CATHE
 
 # Data visualization
 # from plotnine import *
+
+data_cancer = data_cancer.replace('NA', numpy.nan)
+
 # Pour faire tous les graphs de variables en fonction de rea_si_post_op
 for i in data_cancer.columns:
+    data_cancer = data_cancer[data_cancer[i].notna()] # on retire les enregistrements avec valeurs manquante pour la variable d'intéret
     if data_cancer[i].dtypes == int or data_cancer[i].dtypes == float:
         a = (plotnine.ggplot(data=data_cancer, # utilisation du dataset data_cancer
            mapping=plotnine.aes(x='REA_SI_POST_OP', y = i)) # definition de la variable à représenter en y
-             + plotnine.geom_boxplot())  
+             + plotnine.geom_boxplot(na_rm=True))  
     elif data_cancer[i].dtypes == object or data_cancer[i].dtypes == bool:
         a = (plotnine.ggplot(data=data_cancer, # utilisation du dataset data_cancer
            mapping=plotnine.aes(x='REA_SI_POST_OP', fill = i)) # definition de la variable à représenter en y
-             + plotnine.geom_bar(position = "fill"))
+             + plotnine.geom_bar(position = "fill", na_rm=True))
         print(a)
         
         
