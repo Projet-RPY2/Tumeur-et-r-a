@@ -175,19 +175,23 @@ data_cancer = data_cancer.drop(['DOBUTAMINE',  'EPHEDRINE', 'NORADRENALINE', 'PH
 data_cancer = data_cancer.replace('NA', numpy.nan)
 
 # Pour faire tous les graphs de variables en fonction de rea_si_post_op
-for i in data_cancer.columns:
+for i in data_cancer.drop(['ID_INTERVENTION', 'ID_PATIENT'], axis = 1).columns: # nom des colonnes à l'exlusion de ID_INTERVENTION et ID_PATIENT
     data_cancer = data_cancer[data_cancer[i].notna()] # on retire les enregistrements avec valeurs manquante pour la variable d'intéret
     if data_cancer[i].dtypes == int or data_cancer[i].dtypes == float:
-        a = (plotnine.ggplot(data=data_cancer, # utilisation du dataset data_cancer
+        (plotnine.ggplot(data=data_cancer, # utilisation du dataset data_cancer
            mapping=plotnine.aes(x='REA_SI_POST_OP', y = i)) # definition de la variable à représenter en y
-             + plotnine.geom_boxplot(na_rm=True))  
-    elif data_cancer[i].dtypes == object or data_cancer[i].dtypes == bool:
-        a = (plotnine.ggplot(data=data_cancer, # utilisation du dataset data_cancer
+             + plotnine.geom_boxplot(na_rm=True)
+             + plotnine.xlab("hospitalisation en réanimation")
+             + plotnine.ylab(str(i.lower()))
+             + plotnine.theme_538()).save(filename=i)
+    elif data_cancer[i].dtypes == str or data_cancer[i].dtypes == bool:
+        (plotnine.ggplot(data=data_cancer, # utilisation du dataset data_cancer
            mapping=plotnine.aes(x='REA_SI_POST_OP', fill = i)) # definition de la variable à représenter en y
-             + plotnine.geom_bar(position = "fill", na_rm=True))
-        print(a)
-        
-        
+             + plotnine.geom_bar(position = "fill", na_rm=True)
+             + plotnine.xlab("hospitalisation en réanimation")
+             + plotnine.ylab(str(i.lower()))
+             + plotnine.theme_538()).save(filename=i)
+
 # Pour faire analyses statistiques de variables en fonction de rea_si_post_op dans R
 
 # Export de data_cancer sous forme de csv 
