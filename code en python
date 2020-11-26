@@ -10,26 +10,25 @@ import os
 os.getcwd()
 os.chdir("/Users/karimbelarbi/Google_Drive/M1_Data_Science_en_Santé/Djamel Zitouni/Projet rpy2")
 
-# Installation de rpy2 et de panda
+# Installation de l'environnement
 pip install rpy2
+pip install plotnine
+pip install pandas
+
 import rpy2
+import numpy
+import plotnine 
+import pandas
+
 from rpy2 import robjects
 from rpy2.robjects.packages import importr # permettra d'importer la librairie
 
-import numpy
-
-# %matplotlib inline # pour ggplot2
-pip install plotnine
-import plotnine 
-
-pip install pandas
-import pandas
 
 # importr("MASS")
 
 
 # Chargement du fichier
-data = robjects.DataFrame.from_csvfile("export_data_1.csv", header = True, sep = ";", dec = ",")
+# data = robjects.DataFrame.from_csvfile("export_data_1.csv", header = True, sep = ";", dec = ",")
 
 # importation données en utilisant panda
 data_pd = pandas.read_csv("export_data_1.csv", delimiter = ";", decimal = ",", encoding = "latin-1")
@@ -37,14 +36,14 @@ data_pd.head
 
 # Première exploration du fichier data
 
-data.nrow
-data.ncol
+# data.nrow
+# data.ncol
 data_pd.shape # pour voir dimension 299466 x 130
-print(robjects.r.str(data))
+# print(robjects.r.str(data))
 
 # [column.rclass[0] for column in data]
 
-print(data.colnames)
+# print(data.colnames)
 #print(data.rx(1, True))
 # print(robjects.r.str(data))
 # print(robjects.r.str(df))
@@ -73,7 +72,7 @@ list(data_cancer) # pour avoir les noms de colonnes
 
 # Selection des variables d'interet pour l'étude
 
-data_cancer = data_cancer[['ID_INTERVENTION', 'ID_PATIENT', 'AGE', 'CATEGORIE_AGE_ADULTE', 'POIDS', 'IMC', 'CATEGORIE_IMC_ADULTE', 'CATEGORIE_ASA', 'URGENCE', 'SEXE', 'DUREE_INTERVENTION',
+data_cancer = data_cancer[['ID_INTERVENTION', 'ID_PATIENT', 'AGE', 'CATEGORIE_AGE_ADULTE', 'POIDS', 'IMC', 'CATEGORIE_IMC_ADULTE', 'CATEGORIE_ASA', 'URGENCE', 'SEXE', 'DUREE_INTERVENTION', # RETIRER VARIABLE ? POIDS puis DOBUT...
                            'DUREE_BLOC', 'DUREE_ANESTHESIE', 'DUREE_INDUCTION_INCISION', 'LIB_DIAGNOSTIC', 'ENTREE_URGENCES', 'DUREE_SEJOUR_INTERV', 'DELAI_ENTREE_INTERV', 'DECES_SEJOUR_INTERV','REA_SI_POST_OP',  
                             'MOY_PNIM_BLOC_INDUC', 'MOY_PNIM_ANESTH', 'DOBUTAMINE',  'EPHEDRINE', 'NORADRENALINE', 'PHENYLEPHRINE', 'MOY_VCE_CHIR_POIDS_IDEAL', 'TOTAL_REMPLISSAGE']]
 
@@ -129,7 +128,7 @@ pandas.unique(data_cancer['CATEGORIE_ASA'])
 # Traitement des valeurs aberrantes
 
 max(data_cancer['POIDS'])
-min(data_cancer['POIDS'])
+min(data_cancer['POIDS']) # pourquoi -1 ?
 
 data_cancer.loc[data_cancer['POIDS'] < 0, 'POIDS'] = numpy.nan
 data_cancer.loc[data_cancer['POIDS'] > 250, 'POIDS'] = numpy.nan
@@ -153,8 +152,8 @@ data_cancer.loc[ data_cancer['DUREE_INDUCTION_INCISION'] < 0, 'DUREE_INDUCTION_I
 
 data_cancer.loc[ data_cancer['MOY_VCE_CHIR_POIDS_IDEAL'] < 0, 'MOY_VCE_CHIR_POIDS_IDEAL'] = numpy.nan
 
-max(data_cancer['POIDS'])
-min(data_cancer['POIDS'])
+max(data_cancer['POIDS']) # 237
+min(data_cancer['POIDS']) # 2
 
 
 # Ajout de nouvelles variables
@@ -166,15 +165,14 @@ data_cancer['CATECHOLAMINE'] = (data_cancer['DOBUTAMINE'] == 1) | (data_cancer['
 data_cancer[['DOBUTAMINE', 'EPHEDRINE', 'NORADRENALINE', 'PHENYLEPHRINE', 'CATECHOLAMINE']].head(50)
 
 ## Elimination des colonnes 'DOBUTAMINE', 'EPHEDRINE', 'NORADRENALINE', 'PHENYLEPHRINE'
-data_cancer = data_cancer.drop(['DOBUTAMINE',  'EPHEDRINE', 'NORADRENALINE', 'PHENYLEPHRINE'], 1) # 1 pour colonnes
-
+data_cancer = data_cancer.drop(['DOBUTAMINE',  'EPHEDRINE', 'NORADRENALINE', 'PHENYLEPHRINE'], axis = 1) # axis = 1 pour colonnes
 
 # Data visualization
-# from plotnine import *
 
 data_cancer = data_cancer.replace('NA', numpy.nan)
 
-# Pour faire tous les graphs de variables en fonction de rea_si_post_op
+# Pour faire tous les graphs de variables en fonction de rea_si_post_op # Changer xlab = hospitalisation en réanimation 
+        
 for i in data_cancer.drop(['ID_INTERVENTION', 'ID_PATIENT'], axis = 1).columns: # nom des colonnes à l'exlusion de ID_INTERVENTION et ID_PATIENT
     data_cancer = data_cancer[data_cancer[i].notna()] # on retire les enregistrements avec valeurs manquante pour la variable d'intéret
     if data_cancer[i].dtypes == int or data_cancer[i].dtypes == float:
@@ -192,11 +190,10 @@ for i in data_cancer.drop(['ID_INTERVENTION', 'ID_PATIENT'], axis = 1).columns: 
              + plotnine.ylab(str(i.lower()))
              + plotnine.theme_538()).save(filename=i)
 
-        
-# Obtenir les médianes et premier et troisième quartiles pour les variables quantitatives 
+
+# Obtenir les médianes et premier et troisième quartiles pour les variables quantitatives
 data_cancer_distribution = data_cancer.groupby("REA_SI_POST_OP").quantile([0.25, 0.50, 0.75])
-data_cancer_distribution.to_csv('data_cancer_distribution_export.csv', sep = ';', decimal = ',', header = True, encoding = 'latin-1') # exportation du fichier
-   
+data_cancer_distribution.to_csv('data_cancer_distribution_export.csv', sep = ';', decimal = ',', header = True, encoding = 'latin-1') 
     
 # Pour faire analyses statistiques de variables en fonction de rea_si_post_op dans R
 
@@ -206,6 +203,8 @@ data_cancer.to_csv('data_cancer_export.csv', sep = ';', decimal = ',', header = 
 # Importation de data_cancer dans R via rpy2
 robjects.r("path = '/Users/karimbelarbi/Google_Drive/M1_Data_Science_en_Santé/Djamel Zitouni/Projet rpy2/'")
 robjects.r("data_cancer = read.csv2(file.path(path, 'data_cancer_export.csv'), sep = ';', dec = ',', header = TRUE, encoding = 'latin1')")
+
+
 
 # Correction des types de variables
 robjects.r("""data_cancer$ID_INTERVENTION = as.character(data_cancer$ID_INTERVENTION)
@@ -234,12 +233,35 @@ data_cancer$MOY_VCE_CHIR_POIDS_IDEAL  = as.numeric(data_cancer$MOY_VCE_CHIR_POID
 data_cancer$TOTAL_REMPLISSAGE = as.numeric(data_cancer$TOTAL_REMPLISSAGE)
 data_cancer$CATECHOLAMINE = as.factor(data_cancer$CATECHOLAMINE)""")
 
-robjects.r("str(data_cancer)")
-# Creation de deux dataframe en fonction de passage ou non en réanimation
-robjects.r("data_cancer_rea = subset(data_cancer,  REA_SI_POST_OP == 'True')")
-robjects.r("data_cancer_nonrea = subset(data_cancer,  REA_SI_POST_OP == 'False')")
-       
+robjects.r("str(data_cancer)") # vérification du type de variables
+
+
+
 # Analyse statistique
-# Test Chi2 d'homogénéité
+
+# Test Wilcoxon
 # HO = hypothèse de distribution identique de la variable entre groupes REA_SI_POST_OP ou non REA_SI_POST_OP
 # H1 = distribution différente de la variable  entre groupes REA_SI_POST_OP ou non REA_SI_POST_OP
+
+robjects.r("""        
+           resultat = data.frame()
+           nom_variable = vector()
+           classe_variable = vector()
+           nom_test = vector()
+           p_value = vector()
+           """)
+
+robjects.r("""
+    for (i in names(data_cancer)) { 
+            if (class(data_cancer[,i]) == "integer"|class(data_cancer[,i]) == "numeric") {
+                    test = wilcox.test(data_cancer[,i] ~ data_cancer$REA_SI_POST_OP, paired = FALSE, alternative = "two.sided", na.action = na.omit)
+                    nom_variable[i] = as.character(i)
+                    classe_variable[i] = class(data_cancer[,i])
+                    nom_test[i] = "wilcox.test"
+                    p_value[i] = test$p.value   
+                    }      
+   }
+    resultat_wilcox = data.frame(nom_variable, classe_variable, nom_test, p_value)   
+""")           
+
+print(robjects.r("resultat_wilcox"))
