@@ -159,11 +159,11 @@ min(data_cancer['POIDS'])
 
 # Ajout de nouvelles variables
 
-data_cancer['CATHECOLAMINE'] = (data_cancer['DOBUTAMINE'] == 1) | (data_cancer['EPHEDRINE'] == 1) | (data_cancer['NORADRENALINE'] == 1) | (data_cancer['PHENYLEPHRINE'] == 1)
+data_cancer['CATECHOLAMINE'] = (data_cancer['DOBUTAMINE'] == 1) | (data_cancer['EPHEDRINE'] == 1) | (data_cancer['NORADRENALINE'] == 1) | (data_cancer['PHENYLEPHRINE'] == 1)
 # pandas.unique(data_cancer['CATHECOLAMINE'])
 
 ## Vérification de la nouvelle variable "CATHECOLAMINE"
-data_cancer[['DOBUTAMINE', 'EPHEDRINE', 'NORADRENALINE', 'PHENYLEPHRINE', 'CATHECOLAMINE']].head(50)
+data_cancer[['DOBUTAMINE', 'EPHEDRINE', 'NORADRENALINE', 'PHENYLEPHRINE', 'CATECHOLAMINE']].head(50)
 
 ## Elimination des colonnes 'DOBUTAMINE', 'EPHEDRINE', 'NORADRENALINE', 'PHENYLEPHRINE'
 data_cancer = data_cancer.drop(['DOBUTAMINE',  'EPHEDRINE', 'NORADRENALINE', 'PHENYLEPHRINE'], 1) # 1 pour colonnes
@@ -226,7 +226,7 @@ data_cancer$MOY_PNIM_BLOC_INDUC = as.numeric(data_cancer$MOY_PNIM_BLOC_INDUC)
 data_cancer$MOY_PNIM_ANESTH = as.numeric(data_cancer$MOY_PNIM_ANESTH)
 data_cancer$MOY_VCE_CHIR_POIDS_IDEAL  = as.numeric(data_cancer$MOY_VCE_CHIR_POIDS_IDEAL)
 data_cancer$TOTAL_REMPLISSAGE = as.numeric(data_cancer$TOTAL_REMPLISSAGE)
-data_cancer$CATHECOLAMINE = as.factor(data_cancer$CATHECOLAMINE)""")
+data_cancer$CATECHOLAMINE = as.factor(data_cancer$CATECHOLAMINE)""")
 
 robjects.r("str(data_cancer)")
 # Creation de deux dataframe en fonction de passage ou non en réanimation
