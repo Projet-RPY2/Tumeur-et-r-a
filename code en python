@@ -59,7 +59,7 @@ print(data.colnames)
 # subdata.to_csvfile(path = "export_data20.Csv", quote = True, sep = ";", eol='\n', na = 'NA', dec = ',', row_names = RTrue, qmethod = 'escape'', append = False')
 # Enregistrement d'un sous fichier
 
-
+######################
 # Extraction des interventions liées à des chirurgies carcinologiques
 
 print(data_pd["LIB_DIAGNOSTIC"])
@@ -126,6 +126,8 @@ data_cancer.shape # on a toujours dimensions 32232 x 28
 
 pandas.unique(data_cancer['CATEGORIE_ASA'])
 
+
+######################
 # Traitement des valeurs aberrantes
 
 max(data_cancer['POIDS'])
@@ -156,15 +158,17 @@ data_cancer.loc[ data_cancer['MOY_VCE_CHIR_POIDS_IDEAL'] < 0, 'MOY_VCE_CHIR_POID
 max(data_cancer['POIDS'])
 min(data_cancer['POIDS'])
 
-
+######################
 # Ajout de nouvelles variables
 
 data_cancer['CATHECOLAMINE'] = (data_cancer['DOBUTAMINE'] == 1) | (data_cancer['EPHEDRINE'] == 1) | (data_cancer['NORADRENALINE'] == 1) | (data_cancer['PHENYLEPHRINE'] == 1)
 # pandas.unique(data_cancer['CATHECOLAMINE'])
 
 ## Vérification de la nouvelle variable "CATHECOLAMINE"
-data_cancer[['DOBUTAMINE', 'EPHEDRINE', 'NORADRENALINE', 'PHENYLEPHRINE', 'CATHECOLAMINE']].head(50)
-
+data_cancer[['DOBUTAMINE', 'EPHEDRINE', 'NORADRENALINE', 'PHENYLEPHRINE', 'CATHECOLAMINE']].head(50
+                                                                                                 
+                                                                                                 
+######################                                                                                             
 # Data visualization
 # from plotnine import *
 
@@ -183,19 +187,23 @@ for i in data_cancer.columns:
              + plotnine.geom_bar(position = "fill", na_rm=True))
         print(a)
         
-        
+######################
 # Pour faire analyses statistiques de variables en fonction de rea_si_post_op dans R
+
+# Export de data_cancer sous forme de csv puis importation dans R via rpy2
+data_cancer.to_csv('data_cancer_export.csv', sep = ';', decimal = ',', header = True, encoding = 'latin-1')  # exportation du fichier en format csv
+
+robjects.r('path = "/Users/karimbelarbi/Google_Drive/M1_Data_Science_en_Santé/Djamel Zitouni/Projet rpy2/"')
+robjects.r("data_cancer = read.csv2('data_cancer_export.csv', sep = ';', dec = ',', header = TRUE, encoding = 'latin1')")
+print(robjects.r("str(data_cancer)")) # le type des variable est correct
+
+# Analyse statistique
 # Test Chi2 d'homogénéité
 # HO = hypothèse de distribution identique de la variable entre groupes REA_SI_POST_OP ou non REA_SI_POST_OP
 # H1 = distribution différente de la variable  entre groupes REA_SI_POST_OP ou non REA_SI_POST_OP
 
-# Importation de data_cancer dans R
-data_cancer.to_csv('data_cancer4.csv')  # exportation du fichier en format csv # # A VERIFIER
+robjects.r()
 
-robjects.r('path = "/Users/karimbelarbi/Google_Drive/M1_Data_Science_en_Santé/Djamel Zitouni/Projet rpy2/"')
-robjects.r("data_cancer = read.csv2('export_data_1.csv', dec = ',', header = TRUE, encoding = 'latin1', sep = ';')")  # A VERIFIER
-
-# ENSUITE JE PENSE FAIRE LES COMMANDES R POUR CHI2 PUIS POUR REGRESSION LOGISTIQUE.
 
 
 
