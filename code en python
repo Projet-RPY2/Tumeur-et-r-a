@@ -189,9 +189,9 @@ for i in data_cancer.columns:
 # Export de data_cancer sous forme de csv puis importation dans R via rpy2
 data_cancer.to_csv('data_cancer_export.csv', sep = ';', decimal = ',', header = True, encoding = 'latin-1')  # exportation du fichier en format csv
 
-robjects.r('path = "/Users/karimbelarbi/Google_Drive/M1_Data_Science_en_Santé/Djamel Zitouni/Projet rpy2/"')
+robjects.r("path = '/Users/karimbelarbi/Google_Drive/M1_Data_Science_en_Santé/Djamel Zitouni/Projet rpy2/'")
 robjects.r("read.csv2(file.path(path, 'data_cancer_export.csv'), sep = ';', dec = ',', header = TRUE, encoding = 'latin1')")
-print(robjects.r("str(data_cancer)")) # le type des variable est correct
+
 
 # Analyse statistique
 # Test Chi2 d'homogénéité
