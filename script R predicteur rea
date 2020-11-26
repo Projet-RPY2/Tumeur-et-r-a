@@ -86,7 +86,6 @@ summary(data_cancer1)
 ------
 ## Nettoyage de la base de donnée : 
   #correction des valeurs abberantes
-#? categorie_imc_adulte a corriger ? 
 
 data_cancer1 = data_cancer1%>%
   filter (data_cancer1$poids>=0 & data_cancer1$poids<=250, 
@@ -105,9 +104,7 @@ data_cancer1 = data_cancer1%>%
 data_cancer1 <- data_cancer1 %>%
   mutate(catecholamine = ifelse(((dobutamine == 0) & (ephedrine == 0) & (noradrenaline == 0) & (phenylephrine == 0)), 0, 1))
 
-# correction du type de variable (à priori important pour regression logistique)
-# Faut-il transformer poids, age, duree_rea_post_op en numrique  (plutôt que int) ?
-# correction du type de variable # Je ne sais pas si c'est ce qu'il faut pour la suite
+# correction du type de variable (à priori important pour regression logistique : importance de mettre tout en facteur)
 data_cancer1 %>%
   dplyr::mutate(
     id_intervention = as.character(id_intervention),
@@ -127,6 +124,7 @@ data_cancer1 %>%
     phenylephrine = as.factor(phenylephrine),
     catecholamine = as.factor(catecholamine))
 
+---------
 ## Caractérisation / représentation graphique pour représenter notre échantillon
 
 summary(data_cancer1)
@@ -187,7 +185,8 @@ data_cancer_na = data_cancer1%>%
 
 table(data_cancer_na$rea_post_op) # Nombre de patients avec et sans rea_post_op dans l'échantillon data_cancer_na
 
-#creation du modele 
+-----------
+#creation du modele : regression logistique multiple
 library(MASS)
 modele1 = glm(formula=data_cancer_na$rea_si_post_op ~ data_cancer_na$age + 
                 data_cancer_na$imc + data_cancer_na$asa+ data_cancer_na$sexe+ data_cancer_na$urgence+ 
