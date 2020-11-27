@@ -277,7 +277,7 @@ print(robjects.r("resultat_wilcox"))
 #########
 ##########
 # on supprime toutes les données manquantes 
-data_cancer_na = data_cancer.dropna()                 # j'ai remplacé la ligne 122 par :data_cancer = data_cancer.replace(-1,numpy.nan)   #A verifier
+data_cancer_na = data_cancer.dropna()                 # j'ai remplacé la ligne 122 par :data_cancer = data_cancer.replace(-1,numpy.nan)   #Oui c'est bien !
 
 #traitement sur ASA a faire
 #supprime les 3 premiers caracteres pour la variable ASA (ASA1, ASA2, ASA3, ASA4)
@@ -310,7 +310,8 @@ data_cancer_rl.boxplot(column='DUREE_BLOC',by='REA_SI_POST_OP')
 
 
 #Selection des variables a expliquer et de la variable explicative
-
+### Faudrait revoir avec Oriane les variables pré-op et susceptible d'influencer, ci dessous et ligne 87.
+### pourquoi ne pas faire X = df["VAR1", "VAR2"...] plutôt que drop ? Je ne suis pas sur.
 X = df.drop(['REA_SI_POST_OP','AGE', 'IMC','ASA','SEXE', 'DUREE_INTERVENTION', 'DUREE_BLOC','DUREE_ANESTHESIE', 'DUREE_INDUCTION_INCISION','ENTREE_URGENCES', 'DELAI_ENTREE_INTERV','CATHECOLAMINE', 'TOTAL_REMPLISSAGE'],axis=1)
 Y = df["REA_SI_POST_OP"]
 print(X)
