@@ -14,6 +14,7 @@ os.chdir("/Users/karimbelarbi/Google_Drive/M1_Data_Science_en_Santé/Djamel Zit
 pip install rpy2
 pip install plotnine
 pip install pandas
+pip install sklearn
 
 import rpy2
 import numpy
@@ -131,7 +132,7 @@ pandas.unique(data_cancer['CATEGORIE_ASA'])
 # Traitement des valeurs aberrantes
 
 max(data_cancer['POIDS'])
-min(data_cancer['POIDS']) # pourquoi -1 ?
+min(data_cancer['POIDS']) 
 
 data_cancer.loc[data_cancer['POIDS'] < 0, 'POIDS'] = numpy.nan
 data_cancer.loc[data_cancer['POIDS'] > 250, 'POIDS'] = numpy.nan
@@ -283,15 +284,15 @@ data_cancer_na = data_cancer.dropna()                 # j'ai remplacé la ligne 
 #data_cancer_na['ASA'] = data_cancer_na['ASA'].str[3:]
 
 #Choix des variables a intégrer dans le modele
-data_cancer_rl = data_cancer_na[['AGE', 'POIDS', 'IMC','ASA', 'URGENCE', 'SEXE', 'DUREE_INTERVENTION','DUREE_BLOC', 'DUREE_ANESTHESIE', 'DUREE_INDUCTION_INCISION', 'ENTREE_URGENCES', 'DUREE_SEJOUR_INTERV', 'DELAI_ENTREE_INTERV', 'DECES_SEJOUR_INTERV','REA_SI_POST_OP', 'MOY_PNIM_ANESTH', 'CATHECOLAMINE','MOY_VCE_CHIR_POIDS_IDEAL', 'TOTAL_REMPLISSAGE']]
-data_cancer_rl.shape # 11401 x 19
+data_cancer_rl = data_cancer_na[['AGE', 'POIDS', 'IMC','ASA', 'URGENCE', 'SEXE', 'DUREE_INTERVENTION','DUREE_BLOC', 'DUREE_ANESTHESIE', 'DUREE_INDUCTION_INCISION', 'ENTREE_URGENCES', 'DUREE_SEJOUR_INTERV', 'DELAI_ENTREE_INTERV', 'DECES_SEJOUR_INTERV','REA_SI_POST_OP', 'MOY_PNIM_ANESTH', 'CATECHOLAMINE','MOY_VCE_CHIR_POIDS_IDEAL', 'TOTAL_REMPLISSAGE']] # J'ai corrigé l'orthographe de Catecholamine dans le document.
+data_cancer_rl.shape # 8427 x 19
 
 #Creation des 2 echantillons 
 data_cancer_rea = data_cancer_rl.loc[data_cancer_rl['REA_SI_POST_OP'] == 1]
 data_cancer_non_rea = data_cancer_rl.loc[data_cancer_rl['REA_SI_POST_OP'] == 0]
 
-data_cancer_rea.shape
-data_cancer_non_rea.shape
+data_cancer_rea.shape # (1640, 19)
+data_cancer_non_rea.shape # (6787, 19)
 
 #On ajuste les 2 echantillons pour qu'ils aient la meme taille : évite les désiquilibres et imprécisions
 data_cancer_non_rea = data_cancer_non_rea.iloc[0:1500,:]
@@ -309,6 +310,7 @@ data_cancer_rl.boxplot(column='DUREE_BLOC',by='REA_SI_POST_OP')
 
 
 #Selection des variables a expliquer et de la variable explicative
+
 X = df.drop(['REA_SI_POST_OP','AGE', 'IMC','ASA','SEXE', 'DUREE_INTERVENTION', 'DUREE_BLOC','DUREE_ANESTHESIE', 'DUREE_INDUCTION_INCISION','ENTREE_URGENCES', 'DELAI_ENTREE_INTERV','CATHECOLAMINE', 'TOTAL_REMPLISSAGE'],axis=1)
 Y = df["REA_SI_POST_OP"]
 print(X)
