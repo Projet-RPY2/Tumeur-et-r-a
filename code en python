@@ -265,3 +265,149 @@ robjects.r("""
 """)           
 
 print(robjects.r("resultat_wilcox"))
+
+
+
+
+#########
+##########
+# on supprime toutes les données manquantes 
+data_cancer_na = data_cancer.dropna()                 # j'ai remplacé la ligne 122 par :data_cancer = data_cancer.replace(-1,numpy.nan)   #A verifier
+
+#traitement sur ASA a faire
+#supprime les 3 premiers caracteres pour la variable ASA (ASA1, ASA2, ASA3, ASA4)
+#data_cancer_na['ASA'] = data_cancer_na['ASA'].str[3:]
+
+#Choix des variables a intégrer dans le modele
+data_cancer_rl = data_cancer_na[['AGE', 'POIDS', 'IMC','ASA', 'URGENCE', 'SEXE', 'DUREE_INTERVENTION','DUREE_BLOC', 'DUREE_ANESTHESIE', 'DUREE_INDUCTION_INCISION', 'ENTREE_URGENCES', 'DUREE_SEJOUR_INTERV', 'DELAI_ENTREE_INTERV', 'DECES_SEJOUR_INTERV','REA_SI_POST_OP', 'MOY_PNIM_ANESTH', 'CATHECOLAMINE','MOY_VCE_CHIR_POIDS_IDEAL', 'TOTAL_REMPLISSAGE']]
+
+#Creation des 2 echantillons 
+data_cancer_rea = data_cancer_rl.loc[data_cancer_rl['REA_SI_POST_OP'] == 1]
+data_cancer_non_rea = data_cancer_rl.loc[data_cancer_rl['REA_SI_POST_OP'] == 0]
+
+#On ajuste les 2 echantillons pour qu'ils aient la meme taille : évite les désiquilibres et imprécisions
+data_cancer_non_rea = data_cancer_non_rea.iloc[0:1500,:]
+df = pandas.concat([data_cancer_rea,data_cancer_non_rea],axis=0)
+
+#shuffle permet de mélanger au hasard les lignes du df
+from sklearn.utils import shuffle
+df = shuffle(data_cancer_rl)
+
+#scatterplot pour visualiser les variables que l'on souhaite garder
+data_cancer_rl.plot.scatter(x='REA_SI_POST_OP',y='AGE')
+data_cancer_rl.boxplot(column='AGE',by='REA_SI_POST_OP')
+data_cancer_rl.boxplot(column='DUREE_INTERVENTION',by='REA_SI_POST_OP')
+data_cancer_rl.boxplot(column='DUREE_BLOC',by='REA_SI_POST_OP')
+
+
+#Selection des variables a expliquer et de la variable explicative
+X = df.drop(['REA_SI_POST_OP','AGE', 'IMC','ASA','SEXE', 'DUREE_INTERVENTION', 'DUREE_BLOC','DUREE_ANESTHESIE', 'DUREE_INDUCTION_INCISION','ENTREE_URGENCES', 'DELAI_ENTREE_INTERV','CATHECOLAMINE', 'TOTAL_REMPLISSAGE'],axis=1)
+Y = df["REA_SI_POST_OP"]
+print(X)
+
+
+#mise à l'echelle des valeurs (évite les erreurs de standardisation)
+from sklearn.preprocessing import StandardScaler
+sc = StandardScaler()
+X = sc.fit_transform(X)
+X = sc.transform(X)
+
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+
+#on divise les données en 3 sous-ensembles aléatoires(train, valid, test )
+#train pour entrainer le modele, valid pour vvalider le modele et test pour tester le modele
+#test_size = 0.2 (20% des données vont être utilisées pour tester le modele)
+#train_size est par defaut a None (80% des données vont être utilisées pour entrainer le modele)
+
+X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.2)
+X_test, X_valid, y_test, y_valid = train_test_split(X_test, y_test, test_size=0.2)
+
+#creation de la regression logistique
+clf = LogisticRegression(random_state=0, solver='lbfgs',multi_class='auto', max_iter=100000).fit(X_train, y_train)
+
+clf.predict(X_test)   # correspond aux valeurs prédites (type bool)
+#on verifie la correlation entre les valeurs predites et les valeurs attendues (fiabilité du modele)
+clf.score(X_test, y_test)   #0.83 
+
+#matrice de correlation
+corr_matrix = data_cancer_rl.corr()
+import matplotlib.pyplot as plt
+
+import seaborn as sns; sns.set()
+plt.figure(figsize = (20,10))
+sns.heatmap(corr_matrix,annot=True)
+plt.show()
+
+
+### Courbe AUC
+
+#calcul des probabilités 
+from sklearn.metrics import roc_curve, auc
+probas = clf.predict_proba(X_test)
+
+#vecteur des probas par rapport aux valeurs attendues
+rep = [ ]
+yt = y_test.ravel()
+for i in range(probas.shape[0]):
+    p0,p1 = probas[i,:]
+    exp = yt[i]
+    if p0 > p1 :
+        if exp == 0 :
+            # bonne réponse
+            rep.append ( (1, p0) )
+        else :
+            # mauvaise réponse
+            rep.append( (0,p0) )
+    else :
+        if exp == 0 :
+            # mauvaise réponse
+            rep.append ( (0, p1) )
+        else :
+            # bonne réponse
+            rep.append( (1,p1) )
+            
+mat_rep = numpy.array(rep)
+mat_rep[:5]  #a gauche y_test ; a droite la proba associée
+
+#"taux de bonne prediction",sum(mat_rep[:,0]/len(mat_rep)) # 0.829
+
+fpr, tpr, thresholds = roc_curve(mat_rep[:,0], mat_rep[:, 1])
+roc_auc = auc(fpr, tpr)
+plt.plot(fpr, tpr, label='Courbe AUC (area = %0.2f)' % roc_auc)
+plt.plot([0, 1], [0, 1], 'k--')
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 1.0])
+plt.xlabel('Taux de faux positif')
+plt.ylabel('Taux de vrai positif')
+plt.title('AUC')
+plt.legend(loc="lower right")
+
+#On test avec les echantillons tirés au hasard 
+import random
+Y1 = numpy.array([ random.randint(0,1) == 0 for i in range(0,mat_rep.shape[0]) ]) #premier echantillon
+Y2 = numpy.array([ random.randint(0,1) == 0 for i in range(0,mat_rep.shape[0]) ]) #deuxieme echantillon
+
+fpr1, tpr1, thresholds1 = roc_curve(mat_rep[Y1,0], mat_rep[Y1, 1])
+roc_auc1 = auc(fpr1, tpr1)
+fpr2, tpr2, thresholds2 = roc_curve(mat_rep[Y2,0], mat_rep[Y2, 1])
+roc_auc2 = auc(fpr2, tpr2)
+print(fpr1.shape,tpr1.shape,fpr2.shape,tpr2.shape)
+
+#on trace l'AUC des 2 autres echantillons pour verifier le modele
+import matplotlib.pyplot as plt
+fig = plt.figure()
+ax = fig.add_subplot(1,1,1)
+ax.plot(fpr, tpr, label='Courbe AUC (area = %0.2f)' % roc_auc)
+ax.plot([0, 1,2], [0, 1,2], 'k--')
+ax.set_xlim([0.0, 1.0])
+ax.set_ylim([0.0, 1.0])
+ax.set_xlabel('Taux de faux positif')
+ax.set_ylabel('Taux de vrai positif')
+ax.set_title('AUC')
+ax.plot(fpr1, tpr1, label='ech 1, area=%0.2f' % roc_auc1)
+ax.plot(fpr2, tpr2, label='ech 2, area=%0.2f' % roc_auc2)
+ax.legend(loc="lower right")
+
+#AUC compris environ entre 0.81 et 0.84 
+
