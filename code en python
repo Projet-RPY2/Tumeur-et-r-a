@@ -72,7 +72,7 @@ list(data_cancer) # pour avoir les noms de colonnes
 
 # Selection des variables d'interet pour l'étude
 
-data_cancer = data_cancer[['ID_INTERVENTION', 'ID_PATIENT', 'AGE', 'CATEGORIE_AGE_ADULTE', 'POIDS', 'IMC', 'CATEGORIE_IMC_ADULTE', 'CATEGORIE_ASA', 'URGENCE', 'SEXE', 'DUREE_INTERVENTION', # RETIRER VARIABLE ? POIDS puis DOBUT...
+data_cancer = data_cancer[['ID_INTERVENTION', 'ID_PATIENT', 'AGE', 'CATEGORIE_AGE_ADULTE', 'POIDS', 'IMC', 'CATEGORIE_IMC_ADULTE', 'ASA', 'CATEGORIE_ASA', 'URGENCE', 'SEXE', 'DUREE_INTERVENTION', # J'ai ajouté ASA
                            'DUREE_BLOC', 'DUREE_ANESTHESIE', 'DUREE_INDUCTION_INCISION', 'LIB_DIAGNOSTIC', 'ENTREE_URGENCES', 'DUREE_SEJOUR_INTERV', 'DELAI_ENTREE_INTERV', 'DECES_SEJOUR_INTERV','REA_SI_POST_OP',  
                             'MOY_PNIM_BLOC_INDUC', 'MOY_PNIM_ANESTH', 'DOBUTAMINE',  'EPHEDRINE', 'NORADRENALINE', 'PHENYLEPHRINE', 'MOY_VCE_CHIR_POIDS_IDEAL', 'TOTAL_REMPLISSAGE']]
 
@@ -94,6 +94,7 @@ convert_dict = {'ID_INTERVENTION': str, # création d'un dictionnaire attribuant
                 'POIDS': int,
                 'IMC': float,
                 'CATEGORIE_IMC_ADULTE': str,
+                'ASA': int, # j'ai ajouté ASA
                 'CATEGORIE_ASA': str,
                 'URGENCE': bool,
                 'SEXE': str,
@@ -214,6 +215,7 @@ data_cancer$CATEGORIE_AGE_ADULTE = as.factor(data_cancer$CATEGORIE_AGE_ADULTE)
 data_cancer$POIDS = as.integer(data_cancer$POIDS)
 data_cancer$IMC = as.integer(data_cancer$IMC)
 data_cancer$CATEGORIE_IMC_ADULTE = as.factor(data_cancer$CATEGORIE_IMC_ADULTE)
+data_cancer$ASA = as.factor(data_cancer$ASA)
 data_cancer$CATEGORIE_ASA = as.factor(data_cancer$CATEGORIE_ASA)
 data_cancer$URGENCE = as.factor(data_cancer$URGENCE)
 data_cancer$SEXE = as.character(data_cancer$SEXE)
@@ -280,6 +282,7 @@ data_cancer_na = data_cancer.dropna()                 # j'ai remplacé la ligne 
 
 #Choix des variables a intégrer dans le modele
 data_cancer_rl = data_cancer_na[['AGE', 'POIDS', 'IMC','ASA', 'URGENCE', 'SEXE', 'DUREE_INTERVENTION','DUREE_BLOC', 'DUREE_ANESTHESIE', 'DUREE_INDUCTION_INCISION', 'ENTREE_URGENCES', 'DUREE_SEJOUR_INTERV', 'DELAI_ENTREE_INTERV', 'DECES_SEJOUR_INTERV','REA_SI_POST_OP', 'MOY_PNIM_ANESTH', 'CATHECOLAMINE','MOY_VCE_CHIR_POIDS_IDEAL', 'TOTAL_REMPLISSAGE']]
+data_cancer_rl.shape # 11401 x 19
 
 #Creation des 2 echantillons 
 data_cancer_rea = data_cancer_rl.loc[data_cancer_rl['REA_SI_POST_OP'] == 1]
