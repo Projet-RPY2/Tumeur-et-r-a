@@ -341,7 +341,7 @@ clf.predict(X_test)   # correspond aux valeurs prédites (type bool)
 #on verifie la correlation entre les valeurs predites et les valeurs attendues (fiabilité du modele)
 clf.score(X_test, y_test)   #0.83 
 
-#matrice de correlation
+#matrice de correlation pour verifier si il y a intercorrélation entre les variabel explicatives
 corr_matrix = data_cancer_rl.corr()
 import matplotlib.pyplot as plt
 
@@ -421,4 +421,31 @@ ax.plot(fpr2, tpr2, label='ech 2, area=%0.2f' % roc_auc2)
 ax.legend(loc="lower right")
 
 #AUC compris environ entre 0.81 et 0.84 
+
+# matrice de confusion (mesure la qualité du modelele)
+from sklearn import metrics
+cnf_matrix = metrics.confusion_matrix(y_test, y_pred)
+cnf_matrix
+
+# visualisation de la matrice
+%matplotlib inline
+class_names=[0,1] 
+fig, ax = plt.subplots()
+tick_marks = numpy.arange(len(class_names))
+plt.xticks(tick_marks, class_names)
+plt.yticks(tick_marks, class_names)
+
+sns.heatmap(pandas.DataFrame(cnf_matrix), annot=True, cmap="YlGnBu" ,fmt='g')
+ax.xaxis.set_label_position("top")
+plt.tight_layout()
+plt.title('Confusion matrix', y=1.1)
+plt.ylabel('Actual label')
+plt.xlabel('Predicted label')
+
+#Coefficients B0^ du modele
+clf.fit(X, Y)
+coef = clf.coef_
+for p,c in zip(predictors,list(coef[0])):
+    print(p + '\t' + str(c))
+
 
