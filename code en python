@@ -296,7 +296,79 @@ robjects.r("""
 print(robjects.r("resultat_wilcox"))
 
 
+#################
+#################
+# REGRESSION LOGISTIQUE / APPROCHE AVEC RPY2
 
+# Creation dataframe avec variables susceptibles d'expliquer la réanimation 
+
+robjects.r(""" 
+           data_cancer_glm = data_cancer[, c('AGE', 'IMC','ASA', 'SEXE', 'URGENCE', 'DELAI_ENTREE_INTERV', 'CATEGORIE_IMC_ADULTE','REA_SI_POST_OP')]
+""")
+
+# Elimination des valeurs manquantes
+robjects.r("data_cancer_glm = na.omit(data_cancer_glm)" )
+   
+robjects.r("str(data_cancer_glm)") # vérification du type de variables
+
+# Premier modèle en regression logistique
+robjects.r("""
+           modele1 = glm(REA_SI_POST_OP~., family = "binomial", na.action = na.omit, data = data_cancer_glm)
+""")
+    
+robjects.r("summary(modele1)")
+
+# Selection automatique des variables (STEP)
+robjects.r("modele2 =step(modele1, direction = 'both', trace = TRUE)")
+print(robjects.r("summary(modele2)"))
+print(robjects.r("modele2$formula")) # Choisi AGE, SEXEM, URGENCE True et DELAI_ENTRE_INTERV
+
+# Pour voir les odds-ratios
+print(robjects.r("""round(exp(cbind(OR=coef(modele2), confint(modele2))), digits=3)"""))
+
+# calcul du y prédit (réanimation ou non) suivant notre modèle
+robjects.r("""
+           pi_hat = predict(object = modele2, newdata = data_cancer_glm, type = "response") # l’option type="response" de la commande predict permet de calculer πˆ (pi chapeau = pi_hat)
+pi_hat""")
+
+# Pour voir la distribution des ^y (probabilité prédite de réanimation) en fonction du y réel (réanimation ou non, en vrai)
+plot = robjects.r("""
+           boxplot(pi_hat ~ data_cancer_glm$REA_SI_POST_OP) """)
+
+grdevices = importr('grDevices')
+
+grdevices.png(file="tpy2.png")
+p = robjects.r('boxplot(pi_hat ~ data_cancer_glm$REA_SI_POST_OP)')    
+grdevices.dev_off() # à premiere vue, le y prédit est bien plus grand pour les enregistrements ayant vraiment necessité de la réanimation.
+
+# Tracer la courbe ROC en utilisant le package ROCR
+robjects.r("install.packages('ROCR')")
+robjects.r("library(ROCR)")
+
+# prediction de la classe d'affectation pour differents seuils grace à fonction prediction du package ROCR
+robjects.r("""
+prediction_y = prediction(pi_hat[which(!is.na(pi_hat))], data_cancer_glm$REA_SI_POST_OP[which(!is.na(pi_hat))]) 
+   """)        
+
+# Traçage de la courbe ROC
+robjects.r("""
+           perf = performance(prediction_y, "tpr", "fpr")""")  # tpr pour "true positive rate" et fpr pour "false positive rate"
+           
+grdevices = importr('grDevices')
+grdevices.png(file="ROC.png")       
+p = robjects.r("""
+               plot(perf)# plot de la courbe ROC  taux de vrais positif  versus faux positifs
+               abline (a=0, b=1)
+               """)
+grdevices.dev_off() 
+
+# Recupération de l'aire sous la courbe  de la courbe ROC
+auc = robjects.r("auc = performance(prediction_y, 'auc')")
+print(robjects.r("auc@y.values")) # AUC de 0,64
+
+
+##################
+##################
 
 #########
 ##########
