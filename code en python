@@ -34,6 +34,7 @@ os.chdir("/Users/karimbelarbi/Google_Drive/M1_Data_Science_en_Santé/Djamel Zit
 
 # importation données en utilisant panda
 data_pd = pandas.read_csv("export_data_1.csv", delimiter = ";", decimal = ",", encoding = "latin-1")
+type(data_pd)
 data_pd.head
 
 # Première exploration du fichier data
