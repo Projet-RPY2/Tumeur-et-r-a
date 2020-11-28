@@ -203,10 +203,14 @@ for i in data_cancer.drop(['ID_INTERVENTION', 'ID_PATIENT'], axis = 1).columns: 
 
 data_cancer.shape # 32232 x 26. 
 
-# Obtenir les médianes et premier et troisième quartiles pour les variables quantitatives
-data_cancer_distribution = data_cancer.groupby("REA_SI_POST_OP").quantile([0.25, 0.50, 0.75])
-data_cancer_distribution.to_csv('data_cancer_distribution_export.csv', sep = ';', decimal = ',', header = True, encoding = 'latin-1') 
-    
+# Obtention des descriptions des variables quantitatives des enregistrements rea et non_rea
+data_cancer_rea = data_cancer.loc[data_cancer['REA_SI_POST_OP'] == 1]
+data_cancer_non_rea = data_cancer.loc[data_cancer['REA_SI_POST_OP'] == 0]
+
+## La fonction describe() permet de décrire toutes les variables quantitatives d'un jeu de données directement.
+data_cancer_rea.describe().round(2).to_csv('data_cancer_rea_stats_descriptive.csv', sep = ';', decimal = ',', header = True, encoding = 'latin-1')
+data_cancer_non_rea.describe().round(2).to_csv('data_cancer_non_rea_stats_descriptive.csv', sep = ';', decimal = ',', header = True, encoding = 'latin-1')
+
 # Pour faire analyses statistiques de variables en fonction de rea_si_post_op dans R
 
 # Export de data_cancer sous forme de csv 
@@ -215,8 +219,6 @@ data_cancer.to_csv('data_cancer_export.csv', sep = ';', decimal = ',', header = 
 # Importation de data_cancer dans R via rpy2
 robjects.r("path = '/Users/karimbelarbi/Google_Drive/M1_Data_Science_en_Santé/Djamel Zitouni/Projet rpy2/'")
 robjects.r("data_cancer = read.csv2(file.path(path, 'data_cancer_export.csv'), sep = ';', dec = ',', header = TRUE, encoding = 'latin1')")
-
-
 
 # Correction des types de variables
 robjects.r("""data_cancer$ID_INTERVENTION = as.character(data_cancer$ID_INTERVENTION)
@@ -247,8 +249,6 @@ data_cancer$TOTAL_REMPLISSAGE = as.numeric(data_cancer$TOTAL_REMPLISSAGE)
 data_cancer$CATECHOLAMINE = as.factor(data_cancer$CATECHOLAMINE)""")
 
 robjects.r("str(data_cancer)") # vérification du type de variables
-
-
 
 # Analyse statistique
 
