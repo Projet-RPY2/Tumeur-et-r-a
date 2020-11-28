@@ -303,6 +303,7 @@ data_cancer_rea.shape # (1640, 19)
 data_cancer_non_rea.shape # (6787, 19)
 
 #On ajuste les 2 echantillons pour qu'ils aient la meme taille : évite les désiquilibres et imprécisions
+data_cancer_non_rea=shuffle(data_cancer_non_rea)
 data_cancer_non_rea = data_cancer_non_rea.iloc[0:1500,:]            #6787 vs 1640 
 df = pandas.concat([data_cancer_rea,data_cancer_non_rea],axis=0)
 
