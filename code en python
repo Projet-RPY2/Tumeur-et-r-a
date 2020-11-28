@@ -353,7 +353,7 @@ clf = LogisticRegression(random_state=0, solver='lbfgs',multi_class='auto', max_
 
 clf.predict(X_test)   # correspond aux valeurs prédites (type bool)
 #on verifie la correlation entre les valeurs predites et les valeurs attendues (fiabilité du modele)
-clf.score(X_test, y_test)   #0.83 
+clf.score(X_test, y_test)   #0.85
 
 #matrice de correlation pour verifier si il y a intercorrélation entre les variabel explicatives
 corr_matrix = data_cancer_rl.corr()
@@ -395,7 +395,7 @@ for i in range(probas.shape[0]):
 mat_rep = numpy.array(rep)
 mat_rep[:5]  #a gauche y_test ; a droite la proba associée
 
-#"taux de bonne prediction",sum(mat_rep[:,0]/len(mat_rep)) # 0.829
+#"taux de bonne prediction",sum(mat_rep[:,0]/len(mat_rep)) # 0.85
 
 fpr, tpr, thresholds = roc_curve(mat_rep[:,0], mat_rep[:, 1])
 roc_auc = auc(fpr, tpr)
@@ -434,7 +434,7 @@ ax.plot(fpr1, tpr1, label='ech 1, area=%0.2f' % roc_auc1)
 ax.plot(fpr2, tpr2, label='ech 2, area=%0.2f' % roc_auc2)
 ax.legend(loc="lower right")
 
-#AUC compris environ entre 0.81 et 0.84 
+#AUC compris environ entre 0.77 et 0.85 
 
 # matrice de confusion (mesure la qualité du modelele)
 from sklearn import metrics
