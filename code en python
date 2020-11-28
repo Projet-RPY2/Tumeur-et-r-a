@@ -203,13 +203,29 @@ for i in data_cancer.drop(['ID_INTERVENTION', 'ID_PATIENT'], axis = 1).columns: 
 
 data_cancer.shape # 32232 x 26. 
 
-# Obtention des descriptions des variables quantitatives des enregistrements rea et non_rea
+# Obtenir les descriptions des variables quantitatives et qualitatives des enregistrements rea et non_rea:
 data_cancer_rea = data_cancer.loc[data_cancer['REA_SI_POST_OP'] == 1]
 data_cancer_non_rea = data_cancer.loc[data_cancer['REA_SI_POST_OP'] == 0]
 
-## La fonction describe() permet de décrire toutes les variables quantitatives d'un jeu de données directement.
-data_cancer_rea.describe().round(2).to_csv('data_cancer_rea_stats_descriptives.csv', sep = ';', decimal = ',', header = True, encoding = 'latin-1')
-data_cancer_non_rea.describe().round(2).to_csv('data_cancer_non_rea_stats_descriptives.csv', sep = ';', decimal = ',', header = True, encoding = 'latin-1')
+# La fonction describe() permet de décrire toutes les variables quantitatives d'un jeu de données directement.
+data_cancer_rea.describe().round(2).to_csv('data_cancer_rea_stats_quantitatives.csv', sep = ';', decimal = ',', header = True, encoding = 'latin-1')
+data_cancer_non_rea.describe().round(2).to_csv('data_cancer_non_rea_stats_quantitatives.csv', sep = ';', decimal = ',', header = True, encoding = 'latin-1')
+
+# Obtenir les descriptions des variables qualitatives des enregistrements rea et non_rea:
+result = []
+for column in data_cancer_rea[['CATEGORIE_AGE_ADULTE', 'CATEGORIE_IMC_ADULTE', 'CATEGORIE_ASA',  'URGENCE', 'SEXE', 'ENTREE_URGENCES',  'DECES_SEJOUR_INTERV', 'REA_SI_POST_OP', 'CATECHOLAMINE']]:              
+     print("\n" + column)
+     print(data_cancer_rea[column].value_counts())
+     result.append(("\n" + column, data_cancer_rea[column].value_counts()))
+pandas.DataFrame(result).to_csv('data_cancer_rea_stats_qualitatives.csv', sep = ';', decimal = ',', encoding = 'latin-1')
+
+result = []
+for column in data_cancer_non_rea[['CATEGORIE_AGE_ADULTE', 'CATEGORIE_IMC_ADULTE', 'CATEGORIE_ASA',  'URGENCE', 'SEXE', 'ENTREE_URGENCES',  'DECES_SEJOUR_INTERV', 'REA_SI_POST_OP', 'CATECHOLAMINE']]:              
+     print("\n" + column)
+     print(data_cancer_non_rea[column].value_counts())
+     result.append(("\n" + column, data_cancer_rea[column].value_counts()))
+pandas.DataFrame(result).to_csv('data_cancer_non_rea_stats_qualitatives.csv', sep = ';', decimal = ',', encoding = 'latin-1')
+
 
 # Pour faire analyses statistiques de variables en fonction de rea_si_post_op dans R
 
