@@ -208,8 +208,8 @@ data_cancer_rea = data_cancer.loc[data_cancer['REA_SI_POST_OP'] == 1]
 data_cancer_non_rea = data_cancer.loc[data_cancer['REA_SI_POST_OP'] == 0]
 
 ## La fonction describe() permet de décrire toutes les variables quantitatives d'un jeu de données directement.
-data_cancer_rea.describe().round(2).to_csv('data_cancer_rea_stats_descriptive.csv', sep = ';', decimal = ',', header = True, encoding = 'latin-1')
-data_cancer_non_rea.describe().round(2).to_csv('data_cancer_non_rea_stats_descriptive.csv', sep = ';', decimal = ',', header = True, encoding = 'latin-1')
+data_cancer_rea.describe().round(2).to_csv('data_cancer_rea_stats_descriptives.csv', sep = ';', decimal = ',', header = True, encoding = 'latin-1')
+data_cancer_non_rea.describe().round(2).to_csv('data_cancer_non_rea_stats_descriptives.csv', sep = ';', decimal = ',', header = True, encoding = 'latin-1')
 
 # Pour faire analyses statistiques de variables en fonction de rea_si_post_op dans R
 
