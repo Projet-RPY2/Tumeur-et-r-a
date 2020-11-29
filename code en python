@@ -192,7 +192,7 @@ for i in data_cancer.drop(['ID_INTERVENTION', 'ID_PATIENT'], axis = 1).columns: 
              + plotnine.geom_boxplot(na_rm=True)
              + plotnine.xlab("hospitalisation en réanimation")
              + plotnine.ylab(str(i.lower()))
-             + plotnine.theme_538()).save(filename=i)
+             + plotnine.theme_linedraw()).save(filename=i)    
     elif data_cancer_i[i].dtypes == object or data_cancer_i[i].dtypes == bool:
         (plotnine.ggplot(data=data_cancer_i, # utilisation du dataset data_cancer
            mapping=plotnine.aes(x='REA_SI_POST_OP', fill = i)) # definition de la variable à représenter en y
