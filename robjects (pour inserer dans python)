@@ -1,3 +1,11 @@
+# install.packages("dplyr") # pour manipulation des données
+library(dplyr)
+
+# install.packages("tidyr") # pour ordonner, ranger les données
+library(tidyr)
+
+library(MASS)
+
 # Importation du fichier data_cancer
 path = "/Users/karimbelarbi/Google_Drive/M1_Data_Science_en_Santé/Djamel Zitouni/Projet rpy2/"
 data_cancer = read.csv2(file.path(path, 'data_cancer_export.csv'), sep = ';', dec = ',', header = TRUE, encoding = 'latin1')
