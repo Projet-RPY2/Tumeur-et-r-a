@@ -61,3 +61,39 @@ resultat = data.frame(nom_variable, classe_variable, nom_test, p_value)
 
 resultat
 View(resultat)
+
+# Histogramme pour la description de notre population d'intérêt : âge, IMC, catégorie ASA, admission en urgence, mortalité, admission en réanimation. 
+ggplot(data) +
+ aes(x = AGE) +
+ geom_histogram(bins = 50L, fill = "#bdbdbd") +
+ labs(x = "âge (en années)", y = "Effectifs", title = "Répartation de l'âge") +
+ theme_linedraw()
+
+ggplot(data) +
+ aes(x = IMC) +
+ geom_histogram(bins = 50L, fill = "#bdbdbd") +
+ labs(x = "Indice de masse corporel (IMC)", y = "Effectifs", title = "Répartation de l'IMC") +
+ theme_linedraw() +
+ xlim(10L, 50L)
+
+data %>%
+ filter(!is.na(CATEGORIE_ASA)) %>%
+ ggplot() +
+ aes(x = CATEGORIE_ASA) +
+ geom_bar(fill = "#bdbdbd") +
+ labs(x = "Score ASA", y = "Effectifs", title = "Score ASA") +
+ theme_linedraw()
+
+ggplot(data) +
+ aes(x = URGENCE) +
+ geom_bar(fill = "#bdbdbd") +
+ labs(x = "Admission en urgence", y = "Effectifs", title = "Admission en urgence") +
+ theme_minimal()
+
+ggplot(data) +
+ aes(x = REA_SI_POST_OP) +
+ geom_bar(fill = "#bdbdbd") +
+ labs(x = "Hospitalisation en réanimation", y = "Effectifs", title = "Admission en réanimation") +
+ theme_minimal()
+
+# Visualisation des variables significatives en univariées : 
