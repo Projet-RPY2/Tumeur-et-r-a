@@ -72,9 +72,10 @@ data_cancer = data_cancer[['ID_INTERVENTION', 'ID_PATIENT', 'AGE', 'CATEGORIE_AG
 data_cancer.shape # pour avoir les dimensions 32232 x 29
 list(data_cancer) # pour avoir les noms de colonnes 
 
+
+##################
 # Correction des types de variables
 
-# data_cancer = data_cancer.dropna() # Elimine toutes les interventions avec un NA n'importe ou. On perd trop de lignes
 data_cancer = data_cancer.fillna(-1) # on remplie les champs NA par -1
 
 data_cancer.columns # Affichage des variables
@@ -87,7 +88,7 @@ convert_dict = {'ID_INTERVENTION': str, # création d'un dictionnaire attribuant
                 'POIDS': int,
                 'IMC': float,
                 'CATEGORIE_IMC_ADULTE': str,
-                'ASA': int, # j'ai ajouté ASA
+                'ASA': str,
                 'CATEGORIE_ASA': str,
                 'URGENCE': bool,
                 'SEXE': str,
@@ -119,8 +120,9 @@ data_cancer = data_cancer.replace(-1,numpy.nan) # On remet les -1 en NA
 print(data_cancer.dtypes) 
 data_cancer.shape # on a toujours dimensions 32232 x 29
 
-pandas.unique(data_cancer['CATEGORIE_ASA'])
+pandas.unique(data_cancer['CATEGORIE_ASA']) # vérification nan
 
+##################
 # Traitement des valeurs aberrantes
 
 max(data_cancer['POIDS'])
@@ -149,24 +151,25 @@ data_cancer.loc[ data_cancer['DUREE_INDUCTION_INCISION'] < 0, 'DUREE_INDUCTION_I
 data_cancer.loc[ data_cancer['MOY_VCE_CHIR_POIDS_IDEAL'] < 0, 'MOY_VCE_CHIR_POIDS_IDEAL'] = numpy.nan
 
 max(data_cancer['POIDS']) # 237
-min(data_cancer['POIDS']) # 2
+min(data_cancer['POIDS']) # 2 Cela a fonctionné
 
-
+##################
 # Ajout de nouvelles variables
 
 data_cancer['CATECHOLAMINE'] = (data_cancer['DOBUTAMINE'] == 1) | (data_cancer['EPHEDRINE'] == 1) | (data_cancer['NORADRENALINE'] == 1) | (data_cancer['PHENYLEPHRINE'] == 1)
 # pandas.unique(data_cancer['CATHECOLAMINE'])
-data_cancer.shape # pour avoir les dimensions 32232 x 30
+data_cancer.shape # pour avoir les dimensions 32232 x 30 (car ajout variable catacholamine)
 list(data_cancer) #
 
 ## Vérification de la nouvelle variable "CATHECOLAMINE"
-data_cancer[['DOBUTAMINE', 'EPHEDRINE', 'NORADRENALINE', 'PHENYLEPHRINE', 'CATECHOLAMINE']].head(50)
+data_cancer[['DOBUTAMINE', 'EPHEDRINE', 'NORADRENALINE', 'PHENYLEPHRINE', 'CATECHOLAMINE']].head(50) # Cela fonctionne
 
 ## Elimination des colonnes 'DOBUTAMINE', 'EPHEDRINE', 'NORADRENALINE', 'PHENYLEPHRINE'
 data_cancer = data_cancer.drop(['DOBUTAMINE', 'EPHEDRINE', 'NORADRENALINE', 'PHENYLEPHRINE'], axis = 1) # axis = 1 pour colonnes
-data_cancer.shape # pour avoir les dimensions 32232 x 26
+data_cancer.shape # pour avoir les dimensions 32232 x 26 (car élimination de 4 variables désormais inutiles)
 list(data_cancer) # vérification nouvelle colonne "CATECHOLAMINE"
 
+##################
 # Data visualization
 
 data_cancer = data_cancer.replace('NA', numpy.nan)
@@ -527,6 +530,10 @@ plt.title('Confusion matrix', y=1.1)
 plt.ylabel('Class réelle')
 plt.xlabel('Classe predites')
 plt.savefig('mat_conf.png')
+
+# 1318 Vrai negatif   37 faux positif
+# 221 faux negatif   110 Vrai positif
+
 
 #Coefficients B0^ du modele
 clf.fit(X, Y)
