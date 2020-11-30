@@ -170,13 +170,66 @@ data_cancer.shape # pour avoir les dimensions 32232 x 26 (car élimination de 4 
 list(data_cancer) # vérification nouvelle colonne "CATECHOLAMINE"
 
 ##################
-# Data visualization
+# Description et visualisation des variables dans la base de données data_cancer
 
 data_cancer = data_cancer.replace('NA', numpy.nan)
 
-# Pour faire tous les graphs de variables en fonction de rea_si_post_op # Changer xlab = hospitalisation en réanimation 
-        
+# Visualisation rapide de la distribution de certaines variables quantitatives ou qualitatives de data_cancer
+data_cancer.hist(['AGE', 'POIDS', 'IMC', 'DUREE_INTERVENTION', 'DUREE_BLOC', 'DUREE_ANESTHESIE', 'DUREE_INDUCTION_INCISION', 'DUREE_SEJOUR_INTERV', 'TOTAL_REMPLISSAGE'], bins = 100)
 
+# Enregistrement de certains plots illustrant la distribution de certaines variables quantitatives ou qualitatives de data_cancer
+fig = data_cancer.hist('AGE', bins = 100)
+plt.xlabel("age (années)")
+plt.ylabel("effectifs")
+plt.style.use('bmh')
+plt.savefig("data_cancer_age.png")
+
+fig = data_cancer.hist('POIDS', bins = 100)
+plt.xlabel("poids (kg)")
+plt.ylabel("effectifs")
+plt.style.use("bmh")
+plt.savefig("data_cancer_poids.png")
+
+fig = data_cancer.hist('IMC', bins = 100)
+plt.xlabel("IMC")
+plt.ylabel("effectifs")
+plt.style.use("bmh")
+plt.savefig("data_cancer_imc.png")
+
+data_cancer['ASA'].value_counts().plot(kind='bar', figsize=(7, 6), rot=0)
+plt.xlabel("score ASA")
+plt.ylabel("effectifs")
+plt.style.use("bmh")
+plt.savefig("data_cancer_asa.png")
+
+data_cancer['URGENCE'].value_counts().plot(kind='bar', figsize=(7, 6), rot=0)
+plt.xlabel("admission en urgence")
+plt.ylabel("effectifs")
+plt.style.use("bmh")
+plt.savefig("data_cancer_urgence.png")
+
+data_cancer['REA_SI_POST_OP'].value_counts().plot(kind='bar', figsize=(7, 6), rot=0)
+plt.xlabel("admission en réanimation")
+plt.ylabel("effectifs")
+plt.style.use("bmh")
+plt.savefig("data_cancer_réanimation.png")
+
+###
+# Description des variables quantitatives de data_cancer
+data_cancer.describe().round(2).to_csv('data_cancer_stats_quantitatives.csv', sep = ';', decimal = ',', header = True, encoding = 'latin-1')
+
+# Description des variables qualitatives de data_cancer
+result = []
+for column in data_cancer[['CATEGORIE_AGE_ADULTE', 'CATEGORIE_IMC_ADULTE', 'CATEGORIE_ASA',  'URGENCE', 'SEXE', 'ENTREE_URGENCES',  'DECES_SEJOUR_INTERV', 'REA_SI_POST_OP', 'CATECHOLAMINE']]:              
+     print("\n" + column)
+     print(data_cancer[column].value_counts())
+     result.append(("\n" + column, data_cancer[column].value_counts()))  
+pandas.DataFrame(result).to_csv('data_cancer_stats_qualitatives.csv', sep = ',', decimal = '.', encoding = 'latin-1')
+
+##################
+# Description et visualisation des variables en fonction du besoin de réanimation (bases data_cancer_rea versus data_cancer_non_rea)
+
+# Pour faire tous les graphs de variables en fonction de rea_si_post_op # Changer xlab = hospitalisation en réanimation 
 for i in data_cancer.drop(['ID_INTERVENTION', 'ID_PATIENT'], axis = 1).columns: # nom des colonnes à l'exclusion de ID_INTERVENTION et ID_PATIENT
     data_cancer_i = data_cancer[data_cancer[i].notna()] # on retire les enregistrements avec valeurs manquante pour la variable d'intéret
     if data_cancer_i[i].dtypes == int or data_cancer_i[i].dtypes == float:
@@ -195,13 +248,13 @@ for i in data_cancer.drop(['ID_INTERVENTION', 'ID_PATIENT'], axis = 1).columns: 
              + plotnine.scale_fill_brewer(type="qual", palette="Set1") # "Paired / Accent / Dark2 / Spectral
              + plotnine.theme_linedraw()).save(filename=i)    
 
-data_cancer.shape # 32232 x 26. 
+data_cancer.shape # 32232 x 26.  La boucle n'a pas altéré la base de donnée.
 
-# Obtenir les descriptions des variables quantitatives et qualitatives des enregistrements rea et non_rea:
+###
+# Description des variables quantitatives de data_cancer_rea et data_cancer _non_rea #La fonction describe() permet de décrire toutes les variables quantitatives d'un jeu de données directement.
 data_cancer_rea = data_cancer.loc[data_cancer['REA_SI_POST_OP'] == 1]
 data_cancer_non_rea = data_cancer.loc[data_cancer['REA_SI_POST_OP'] == 0]
 
-# La fonction describe() permet de décrire toutes les variables quantitatives d'un jeu de données directement.
 data_cancer_rea.describe().round(2).to_csv('data_cancer_rea_stats_quantitatives.csv', sep = ';', decimal = ',', header = True, encoding = 'latin-1')
 data_cancer_non_rea.describe().round(2).to_csv('data_cancer_non_rea_stats_quantitatives.csv', sep = ';', decimal = ',', header = True, encoding = 'latin-1')
 
@@ -211,16 +264,16 @@ for column in data_cancer_rea[['CATEGORIE_AGE_ADULTE', 'CATEGORIE_IMC_ADULTE', '
      print("\n" + column)
      print(data_cancer_rea[column].value_counts())
      result.append(("\n" + column, data_cancer_rea[column].value_counts()))
-pandas.DataFrame(result).to_csv('data_cancer_rea_stats_qualitatives.csv', sep = ';', decimal = ',', encoding = 'latin-1')
+pandas.DataFrame(result).to_csv('data_cancer_rea_stats_qualitatives.csv', sep = ',', decimal = '.', encoding = 'latin-1')
 
 result = []
 for column in data_cancer_non_rea[['CATEGORIE_AGE_ADULTE', 'CATEGORIE_IMC_ADULTE', 'CATEGORIE_ASA',  'URGENCE', 'SEXE', 'ENTREE_URGENCES',  'DECES_SEJOUR_INTERV', 'REA_SI_POST_OP', 'CATECHOLAMINE']]:              
      print("\n" + column)
      print(data_cancer_non_rea[column].value_counts())
      result.append(("\n" + column, data_cancer_non_rea[column].value_counts()))
-pandas.DataFrame(result).to_csv('data_cancer_non_rea_stats_qualitatives.csv', sep = ';', decimal = ',', encoding = 'latin-1')
+pandas.DataFrame(result).to_csv('data_cancer_non_rea_stats_qualitatives.csv', sep = ',', decimal = '.', encoding = 'latin-1')
 
-
+###################
 # Pour faire analyses statistiques de variables en fonction de rea_si_post_op dans R
 
 # Export de data_cancer sous forme de csv 
