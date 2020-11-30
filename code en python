@@ -6,7 +6,7 @@ Created on Mon Nov  9 16:14:50 2020
 @author: karimbelarbi
 """
 
-# Installation de l'environnement
+# Installation de l'environnement et import des packages
 pip install os
 pip install rpy2
 pip install plotnine
