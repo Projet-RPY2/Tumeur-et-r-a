@@ -372,7 +372,7 @@ robjects.r("""
            modele1 = glm(REA_SI_POST_OP~., family = "binomial", na.action = na.omit, data = data_cancer_glm)
 """)
     
-robjects.r("summary(modele1)")
+print(robjects.r("summary(modele1)"))
 
 # Selection automatique des variables (STEP)
 robjects.r("modele2 =step(modele1, direction = 'both', trace = TRUE)")
