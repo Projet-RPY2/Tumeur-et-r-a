@@ -387,10 +387,6 @@ data_cancer_non_rea=shuffle(data_cancer_non_rea)
 data_cancer_non_rea = data_cancer_non_rea.iloc[0:1500,:]
 df = pandas.concat([data_cancer_rea,data_cancer_non_rea],axis=0)
 
-#shuffle permet de mélanger au hasard les lignes du df
-from sklearn.utils import shuffle
-df = shuffle(data_cancer_rl)
-
 
 #scatterplot pour visualiser les variables que l'on souhaite garder
 data_cancer_rl.boxplot(column='AGE',by='REA_SI_POST_OP')
@@ -408,7 +404,6 @@ X = X.iloc[:,:].values
 labelencoder_X_1 = LabelEncoder()
 X[:, 2] = labelencoder_X_1.fit_transform(X[:, 2])
 print(X)
-
 
 #mise à l'echelle des valeurs (évite les erreurs de standardisation)
 from sklearn.preprocessing import StandardScaler
