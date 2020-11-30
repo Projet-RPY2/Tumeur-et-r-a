@@ -11,6 +11,7 @@ pip install os
 pip install rpy2
 pip install plotnine
 pip install pandas
+pip install matplotlib
 pip install sklearn
 
 import os
@@ -18,61 +19,50 @@ import rpy2
 import numpy
 import plotnine 
 import pandas
+import matplotlib.pyplot as plt
 
 from rpy2 import robjects
 from rpy2.robjects.packages import importr # permettra d'importer la librairie
 
-# importr("MASS")
-
+##################
 # Définition du répertoire de travail
-os.getcwd()
 os.chdir("/Users/karimbelarbi/Google_Drive/M1_Data_Science_en_Santé/Djamel Zitouni/Projet rpy2")
-
+os.getcwd()
 
 # Chargement du fichier
-# data = robjects.DataFrame.from_csvfile("export_data_1.csv", header = True, sep = ";", dec = ",")
-
 # importation données en utilisant panda
 data_pd = pandas.read_csv("export_data_1.csv", delimiter = ";", decimal = ",", encoding = "latin-1")
 type(data_pd)
-data_pd.head
 
+##################
 # Première exploration du fichier data
-
-# data.nrow
-# data.ncol
+data_pd.info()
+list(data_pd)
+data_pd.head
 data_pd.shape # pour voir dimension 299466 x 130
-# print(robjects.r.str(data))
 
-# [column.rclass[0] for column in data]
-
-# print(data.colnames)
-#print(data.rx(1, True))
-# print(robjects.r.str(data))
-# print(robjects.r.str(df))
-#x = data.rx(10, True)
-# print(x.rx2('POIDS_IDEAL')[0])
-# robjects.r.mean(data[2])
-# robjects.r.sd(data[2])
-# rows_i = robjects.IntVector(range(1,5))
-# subdata = data.rx(rows_i, True)
-# print(subdata.nrow)
-
-# subdata.to_csvfile(path = "export_data20.Csv", quote = True, sep = ";", eol='\n', na = 'NA', dec = ',', row_names = RTrue, qmethod = 'escape'', append = False')
-# Enregistrement d'un sous fichier
-
-
+##################
 # Extraction des interventions liées à des chirurgies carcinologiques
-
 print(data_pd["LIB_DIAGNOSTIC"])
-data_cancer = data_pd[data_pd['LIB_DIAGNOSTIC'].str.contains('cancer|tumeur|carcinome', case = False, na= False)]
-    
+data_cancer = data_pd[data_pd['LIB_DIAGNOSTIC'].str.contains('cancer|tumeur|carcinome', case = False, na= False)] # pour extraire enregistrements liés à chirurgies carcinologiques
+
+# lib_diagnostic associés à ces interventions
 set(data_cancer["LIB_DIAGNOSTIC"]) # pour vérifier les lib_diagnostics selectionnés
 len(set(data_cancer["LIB_DIAGNOSTIC"])) # un total de 679 lib_diagnostics différents.
 
+# Années entre lesquelles ont eu lieu ces interventions
+max(data_cancer['ANNEE']) # 2017
+min(data_cancer['ANNEE']) # 2013
+
+# Dimension de la base de donnée data_cancer
 data_cancer.shape # pour avoir les dimensions 32232 x 130
+
+# Nombre de cas ayant ou non necessité une réanimation
+data_cancer[data_cancer['REA_SI_POST_OP'] == 1].shape
+data_cancer[data_cancer['REA_SI_POST_OP'] == 0].shape
 list(data_cancer) # pour avoir les noms de colonnes
 
+##################
 # Selection des variables d'interet pour l'étude
 
 data_cancer = data_cancer[['ID_INTERVENTION', 'ID_PATIENT', 'AGE', 'CATEGORIE_AGE_ADULTE', 'POIDS', 'IMC', 'CATEGORIE_IMC_ADULTE', 'ASA', 'CATEGORIE_ASA', 'URGENCE', 'SEXE', 'DUREE_INTERVENTION', # J'ai ajouté ASA
