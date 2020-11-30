@@ -402,8 +402,9 @@ Y = df["REA_SI_POST_OP"]
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 X = X.iloc[:,:].values
 labelencoder_X_1 = LabelEncoder()
-X[:, 2] = labelencoder_X_1.fit_transform(X[:, 2])
-print(X)
+X[:, 2] = labelencoder_X_1.fit_transform(X[:, 2]) #recode ASA 
+X[:, 4] = labelencoder_X_1.fit_transform(X[:, 4]) #recode sexe
+#print(X)
 
 #mise à l'echelle des valeurs (évite les erreurs de standardisation)
 from sklearn.preprocessing import StandardScaler
