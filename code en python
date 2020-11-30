@@ -22,8 +22,9 @@ import pandas
 import matplotlib.pyplot as plt
 
 from rpy2 import robjects
-from rpy2.robjects.packages import importr # permettra d'importer la librairie
+from rpy2.robjects.packages import importr # permettra d'importer librairies
 
+grdevices=importr('grDevices')
 ##################
 # Définition du répertoire de travail
 os.chdir("/Users/karimbelarbi/Google_Drive/M1_Data_Science_en_Santé/Djamel Zitouni/Projet rpy2")
