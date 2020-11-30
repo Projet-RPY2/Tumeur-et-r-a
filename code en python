@@ -554,7 +554,7 @@ for p,c in zip(predictors,list(coef[0])):
 #A VOIR SI ON GARDE OU PAS
 #ACP en rouge = non réa 
 #bleu = réa
-data_cancer_rl2 = data_cancer_na[['AGE', 'POIDS', 'IMC', 'URGENCE', 'SEXE', 'DUREE_INTERVENTION','DUREE_BLOC', 'DUREE_ANESTHESIE', 'DUREE_INDUCTION_INCISION', 'ENTREE_URGENCES', 'DUREE_SEJOUR_INTERV', 'DELAI_ENTREE_INTERV', 'DECES_SEJOUR_INTERV','REA_SI_POST_OP', 'MOY_PNIM_ANESTH', 'CATHECOLAMINE','MOY_VCE_CHIR_POIDS_IDEAL', 'TOTAL_REMPLISSAGE']]
+data_cancer_rl2 = data_cancer_na[['AGE', 'POIDS', 'IMC', 'URGENCE', 'DUREE_INTERVENTION','DUREE_BLOC', 'DUREE_ANESTHESIE', 'DUREE_INDUCTION_INCISION', 'ENTREE_URGENCES', 'DUREE_SEJOUR_INTERV', 'DELAI_ENTREE_INTERV', 'DECES_SEJOUR_INTERV','REA_SI_POST_OP', 'MOY_PNIM_ANESTH', 'CATHECOLAMINE','MOY_VCE_CHIR_POIDS_IDEAL', 'TOTAL_REMPLISSAGE']]
 
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
@@ -564,7 +564,7 @@ acp = PCA(svd_solver='full')
 coord = acp.fit_transform(Z)
 
 
-var_rea = data_cancer_rl2.iloc[:,13]
+var_rea = data_cancer_rl2.iloc[:,12]
 print(var_rea)
 modalites = numpy.unique(var_rea)
 print(modalites)
