@@ -328,24 +328,32 @@ robjects.r("""
            """)
 
 robjects.r("""
-    for (i in names(data_cancer)) { 
-            if (class(data_cancer[,i]) == "integer"|class(data_cancer[,i]) == "numeric") {
-                    test = wilcox.test(data_cancer[,i] ~ data_cancer$REA_SI_POST_OP, paired = FALSE, alternative = "two.sided", na.action = na.omit)
-                    nom_variable[i] = as.character(i)
-                    classe_variable[i] = class(data_cancer[,i])
-                    nom_test[i] = "wilcox.test"
-                    p_value[i] = test$p.value   
-                    }      
-   }
-    resultat_wilcox = data.frame(nom_variable, classe_variable, nom_test, p_value)   
+   for (i in names(data_cancer)) { 
+    if (class(data_cancer[,i]) == "integer"|class(data_cancer[,i]) == "numeric") {
+      test = wilcox.test(data_cancer[,i] ~ data_cancer$REA_SI_POST_OP, paired = FALSE, alternative = "two.sided", na.action = na.omit)
+      nom_variable[i] = as.character(i)
+      classe_variable[i] = class(data_cancer[,i])
+      nom_test[i] = "wilcox.test"
+      p_value[i] = test$p.value   }
+    else if (class(data_cancer[,i]) == "factor") {  
+      tableau = table(data_cancer[,i], data_cancer[, "REA_SI_POST_OP"], useNA = "no" )
+      test = chisq.test(tableau, )
+      nom_variable[i] = as.character(i)
+      classe_variable[i] = class(data_cancer[,i])
+      nom_test[i] = "chisq.test"
+      p_value[i] = test$p.value 
+}
+}
+resultat = data.frame(nom_variable, classe_variable, nom_test, p_value) 
 """)           
 
-print(robjects.r("resultat_wilcox"))
+print(robjects.r("resultat"))
 
+print(robjects.r("write.csv(resultat,'/Users/karimbelarbi/Google_Drive/M1_Data_Science_en_Santé/Djamel Zitouni/Projet rpy2/resultats stats.csv', row.names = FALSE)")
+      
 
 #################
-#################
-# REGRESSION LOGISTIQUE / APPROCHE AVEC RPY2
+# Regression logistique pour expliquer le besoin de réanimation en fonctions de variables pré-op : approche avec rpy2 / glm (R)
 
 # Creation dataframe avec variables susceptibles d'expliquer la réanimation 
 
@@ -414,8 +422,9 @@ auc = robjects.r("auc = performance(prediction_y, 'auc')")
 print(robjects.r("auc@y.values")) # AUC de 0,64
 
 
-##################
-##################
+#################
+# Regression logistique pour expliquer le besoin de réanimation en fonctions de variables pré-op : approche avec sklearn
+      
 # on supprime toutes les données manquantes 
 data_cancer_na = data_cancer.dropna()                 # j'ai remplacé la ligne 122 par :data_cancer = data_cancer.replace(-1,numpy.nan)   #Oui c'est bien !
 
