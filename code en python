@@ -376,7 +376,7 @@ data_cancer_na = data_cancer.dropna()                 # j'ai remplacé la ligne 
 #Choix des variables a intégrer dans le modele
 data_cancer_rl = data_cancer_na[['AGE', 'POIDS', 'IMC','ASA', 'URGENCE', 'SEXE', 'DUREE_INTERVENTION','DUREE_BLOC', 'DUREE_ANESTHESIE', 'DUREE_INDUCTION_INCISION', 'ENTREE_URGENCES', 'DUREE_SEJOUR_INTERV', 'DELAI_ENTREE_INTERV', 'DECES_SEJOUR_INTERV','REA_SI_POST_OP', 'MOY_PNIM_ANESTH', 'CATHECOLAMINE','MOY_VCE_CHIR_POIDS_IDEAL', 'TOTAL_REMPLISSAGE']]
 
-predictors =['AGE', 'IMC','ASA','URGENCE', 'SEXE', 'DUREE_INTERVENTION', 'DUREE_BLOC','ENTREE_URGENCES', 'DELAI_ENTREE_INTERV','MOY_PNIM_ANESTH','CATHECOLAMINE', 'MOY_VCE_CHIR_POIDS_IDEAL','TOTAL_REMPLISSAGE']
+predictors =['AGE', 'IMC','ASA','URGENCE', 'SEXE', 'DELAI_ENTREE_INTERV']
 #Creation des 2 echantillons 
 data_cancer_rea = data_cancer_rl.loc[data_cancer_rl['REA_SI_POST_OP'] == 1]
 data_cancer_non_rea = data_cancer_rl.loc[data_cancer_rl['REA_SI_POST_OP'] == 0]
@@ -399,7 +399,7 @@ data_cancer_rl.boxplot(column='DUREE_BLOC',by='REA_SI_POST_OP')
 
 
 #Selection des variables a expliquer et de la variable explicative
-X = df.drop(['REA_SI_POST_OP','POIDS', 'DUREE_ANESTHESIE', 'DUREE_INDUCTION_INCISION','DECES_SEJOUR_INTERV'],axis=1)
+X = df.drop(['REA_SI_POST_OP','POIDS', 'DUREE_INTERVENTION', 'DUREE_BLOC', 'ENTREE_URGENCES','DUREE_ANESTHESIE', 'DUREE_SEJOUR_INTERV','MOY_PNIM_ANESTH', 'CATHECOLAMINE','MOY_VCE_CHIR_POIDS_IDEAL','TOTAL_REMPLISSAGE','DUREE_INDUCTION_INCISION','DECES_SEJOUR_INTERV'],axis=1)
 Y = df["REA_SI_POST_OP"]
 
 #One hot encoder 
@@ -483,8 +483,6 @@ for i in range(probas.shape[0]):
 mat_rep = numpy.array(rep)
 mat_rep[:5]  #a gauche y_test ; a droite la proba associée
 
-#"taux de bonne prediction",sum(mat_rep[:,0]/len(mat_rep)) # 0.829
-
 fpr, tpr, thresholds = roc_curve(mat_rep[:,0], mat_rep[:, 1])
 roc_auc = auc(fpr, tpr)
 plt.plot(fpr, tpr, label='Courbe AUC (area = %0.2f)' % roc_auc)
@@ -526,7 +524,7 @@ ax.plot(fpr2, tpr2, label='ech 2, area=%0.2f' % roc_auc2)
 ax.plot(fpr3, tpr3, label='ech 3, area=%0.2f' % roc_auc3)
 ax.legend(loc="lower right")
 
-#auc entre 0.81 et 0.84 
+#auc entre 0.63-0.68 
 
 
 
