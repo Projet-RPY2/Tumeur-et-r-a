@@ -444,7 +444,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns; sns.set()
 plt.figure(figsize = (20,10))
 sns.heatmap(corr_matrix,annot=True)
-plt.show()
+plt.savefig('mat_corr.png')
 
 ### Courbe AUC
 
@@ -486,6 +486,7 @@ plt.xlabel('Taux de faux positif')
 plt.ylabel('Taux de vrai positif')
 plt.title('AUC')
 plt.legend(loc="lower right")
+plt.savefig('reg_log.png')
 
 #On test avec les echantillons tirés au hasard 
 import random
@@ -516,8 +517,7 @@ ax.plot(fpr1, tpr1, label='ech 1, area=%0.2f' % roc_auc1)
 ax.plot(fpr2, tpr2, label='ech 2, area=%0.2f' % roc_auc2)
 ax.plot(fpr3, tpr3, label='ech 3, area=%0.2f' % roc_auc3)
 ax.legend(loc="lower right")
-
-#auc entre 0.63-0.68 
+plt.savefig('reg_log_ech.png')
 
 
 
@@ -535,6 +535,7 @@ plt.tight_layout()
 plt.title('Confusion matrix', y=1.1)
 plt.ylabel('Class réelle')
 plt.xlabel('Classe predites')
+plt.savefig('mat_conf.png')
 
 # 1318 Vrai negatif   37 faux positif
 # 221 faux negatif   110 Vrai positif
@@ -585,5 +586,5 @@ for c in range(len(modalites)):
 plt.plot([-6,6],[0,0],color='silver',linestyle='-',linewidth=1)
 plt.plot([0,0],[-6,6],color='silver',linestyle='-',linewidth=1)
 #affichage
-plt.show()
+plt.savefig('ACP.png')
 
