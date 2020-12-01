@@ -437,14 +437,14 @@ data_cancer_rl = data_cancer_rl.dropna()
 predictors =['AGE', 'IMC','CATEGORIE_ASA','URGENCE', 'SEXE', 'CATEGORIE_IMC_ADULTE','DELAI_ENTREE_INTERV']
 
 #Creation des 2 echantillons 
-data_cancer_rea = data_cancer_rl.loc[data_cancer_rl['REA_SI_POST_OP'] == 1]
-data_cancer_non_rea = data_cancer_rl.loc[data_cancer_rl['REA_SI_POST_OP'] == 0]
+data_cancer_rea_1 = data_cancer_rl.loc[data_cancer_rl['REA_SI_POST_OP'] == 1]
+data_cancer_non_rea_1 = data_cancer_rl.loc[data_cancer_rl['REA_SI_POST_OP'] == 0]
 
 #On ajuste les 2 echantillons pour qu'ils aient la meme taille : évite les désiquilibres et imprécisions
 from sklearn.utils import shuffle
-data_cancer_non_rea=shuffle(data_cancer_non_rea)
-data_cancer_non_rea = data_cancer_non_rea.iloc[0:6600,:]
-df = pandas.concat([data_cancer_rea,data_cancer_non_rea],axis=0)
+data_cancer_non_rea_1=shuffle(data_cancer_non_rea_1)
+data_cancer_non_rea_1 = data_cancer_non_rea_1.iloc[0:6600,:]
+df = pandas.concat([data_cancer_rea_1,data_cancer_non_rea_1],axis=0)
 
 #Selection des variables a expliquer et de la variable explicative
 X = df.drop(['REA_SI_POST_OP'],axis=1)
