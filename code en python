@@ -428,13 +428,12 @@ print(robjects.r("auc@y.values")) # AUC de 0,64
 #################
 # Regression logistique pour expliquer le besoin de réanimation en fonctions de variables pré-op : approche avec sklearn
       
+
 # on supprime toutes les données manquantes 
-data_cancer_na = data_cancer.dropna()                 # j'ai remplacé la ligne 122 par :data_cancer = data_cancer.replace(-1,numpy.nan)   #Oui c'est bien !
-
 #Choix des variables a intégrer dans le modele
-data_cancer_rl = data_cancer_na[['AGE', 'POIDS', 'IMC','ASA', 'URGENCE', 'SEXE', 'CATEGORIE_IMC_ADULTE','DUREE_INTERVENTION','DUREE_BLOC', 'DUREE_ANESTHESIE', 'DUREE_INDUCTION_INCISION', 'ENTREE_URGENCES', 'DUREE_SEJOUR_INTERV', 'DELAI_ENTREE_INTERV', 'DECES_SEJOUR_INTERV','REA_SI_POST_OP', 'MOY_PNIM_ANESTH', 'CATHECOLAMINE','MOY_VCE_CHIR_POIDS_IDEAL', 'TOTAL_REMPLISSAGE']]
-
-predictors =['AGE', 'IMC','ASA','URGENCE', 'SEXE', 'CATEGORIE_IMC_ADULTE','DELAI_ENTREE_INTERV']
+data_cancer_rl = data_cancer[['AGE', 'IMC','CATEGORIE_ASA','URGENCE', 'SEXE', 'CATEGORIE_IMC_ADULTE','DELAI_ENTREE_INTERV','REA_SI_POST_OP']]
+data_cancer_rl = data_cancer_rl.dropna()
+predictors =['AGE', 'IMC','CATEGORIE_ASA','URGENCE', 'SEXE', 'CATEGORIE_IMC_ADULTE','DELAI_ENTREE_INTERV']
 
 #Creation des 2 echantillons 
 data_cancer_rea = data_cancer_rl.loc[data_cancer_rl['REA_SI_POST_OP'] == 1]
@@ -443,7 +442,7 @@ data_cancer_non_rea = data_cancer_rl.loc[data_cancer_rl['REA_SI_POST_OP'] == 0]
 #On ajuste les 2 echantillons pour qu'ils aient la meme taille : évite les désiquilibres et imprécisions
 from sklearn.utils import shuffle
 data_cancer_non_rea=shuffle(data_cancer_non_rea)
-data_cancer_non_rea = data_cancer_non_rea.iloc[0:1500,:]
+data_cancer_non_rea = data_cancer_non_rea.iloc[0:6500,:]
 df = pandas.concat([data_cancer_rea,data_cancer_non_rea],axis=0)
 
 #scatterplot pour visualiser les variables que l'on souhaite garder
@@ -453,17 +452,8 @@ data_cancer_rl.boxplot(column='DUREE_BLOC',by='REA_SI_POST_OP')
 
 
 #Selection des variables a expliquer et de la variable explicative
-X = df.drop(['REA_SI_POST_OP','POIDS', 'DUREE_INTERVENTION', 'DUREE_BLOC', 'ENTREE_URGENCES','DUREE_ANESTHESIE', 'DUREE_SEJOUR_INTERV','MOY_PNIM_ANESTH', 'CATHECOLAMINE','MOY_VCE_CHIR_POIDS_IDEAL','TOTAL_REMPLISSAGE','DUREE_INDUCTION_INCISION','DECES_SEJOUR_INTERV'],axis=1)
+X = df.drop(['REA_SI_POST_OP'],axis=1)
 Y = df["REA_SI_POST_OP"]
-
-#One hot encoder 
-from sklearn.preprocessing import LabelEncoder, OneHotEncoder
-X = X.iloc[:,:].values
-labelencoder_X_1 = LabelEncoder()
-X[:, 2] = labelencoder_X_1.fit_transform(X[:, 2]) #recode asa
-X[:, 4] = labelencoder_X_1.fit_transform(X[:, 4]) #recode sexe
-X[:, 5] = labelencoder_X_1.fit_transform(X[:, 5]) #recode categorie_imc_adulte
-
 
 #mise à l'echelle des valeurs (évite les erreurs de standardisation)
 from sklearn.preprocessing import StandardScaler
