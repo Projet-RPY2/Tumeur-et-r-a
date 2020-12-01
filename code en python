@@ -359,12 +359,14 @@ print(robjects.r("write.csv(resultat,'/Users/karimbelarbi/Google_Drive/M1_Data_S
 # Creation dataframe avec variables susceptibles d'expliquer la réanimation 
 
 robjects.r(""" 
-           data_cancer_glm = data_cancer[, c('AGE', 'IMC','ASA', 'SEXE', 'URGENCE', 'DELAI_ENTREE_INTERV', 'CATEGORIE_IMC_ADULTE','REA_SI_POST_OP')]
+           data_cancer_glm = data_cancer[, c('AGE', 'IMC','SEXE', 'URGENCE', 'DELAI_ENTREE_INTERV', 'CATEGORIE_IMC_ADULTE','CATEGORIE_ASA','REA_SI_POST_OP')]
 """)
 
 # Elimination des valeurs manquantes
-robjects.r("data_cancer_glm = na.omit(data_cancer_glm)" )
-   
+
+robjects.r("data_cancer_glm = na.omit(data_cancer_glm)")
+# robjects.r("data_cancer_glm[complete.cases(data_cancer_glm), ]")
+
 robjects.r("str(data_cancer_glm)") # vérification du type de variables
 
 # Premier modèle en regression logistique
