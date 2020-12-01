@@ -591,8 +591,8 @@ plt.ylabel('Class réelle')
 plt.xlabel('Classe predites')
 plt.savefig('mat_conf.png')
 
-# 1318 Vrai negatif   37 faux positif
-# 221 faux negatif   110 Vrai positif
+# 948 Vrai negatif   360 faux positif
+# 761 faux negatif   576 Vrai positif
 
 
 #Coefficients B0^ du modele
