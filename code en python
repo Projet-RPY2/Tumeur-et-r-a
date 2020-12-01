@@ -445,12 +445,6 @@ data_cancer_non_rea=shuffle(data_cancer_non_rea)
 data_cancer_non_rea = data_cancer_non_rea.iloc[0:6500,:]
 df = pandas.concat([data_cancer_rea,data_cancer_non_rea],axis=0)
 
-#scatterplot pour visualiser les variables que l'on souhaite garder
-data_cancer_rl.boxplot(column='AGE',by='REA_SI_POST_OP')
-data_cancer_rl.boxplot(column='DUREE_INTERVENTION',by='REA_SI_POST_OP')
-data_cancer_rl.boxplot(column='DUREE_BLOC',by='REA_SI_POST_OP')
-
-
 #Selection des variables a expliquer et de la variable explicative
 X = df.drop(['REA_SI_POST_OP'],axis=1)
 Y = df["REA_SI_POST_OP"]
