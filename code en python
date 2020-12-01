@@ -450,6 +450,14 @@ df = pandas.concat([data_cancer_rea_1,data_cancer_non_rea_1],axis=0)
 X = df.drop(['REA_SI_POST_OP'],axis=1)
 Y = df["REA_SI_POST_OP"]
 
+#One hot encoder 
+from sklearn.preprocessing import LabelEncoder, OneHotEncoder
+X = X.iloc[:,:].values
+labelencoder_X_1 = LabelEncoder()
+X[:, 2] = labelencoder_X_1.fit_transform(X[:, 2])
+X[:, 4] = labelencoder_X_1.fit_transform(X[:, 4])
+X[:, 5] = labelencoder_X_1.fit_transform(X[:, 5])
+
 #mise à l'echelle des valeurs (évite les erreurs de standardisation)
 from sklearn.preprocessing import StandardScaler
 sc = StandardScaler()
