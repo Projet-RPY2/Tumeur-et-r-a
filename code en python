@@ -435,6 +435,7 @@ print(robjects.r("auc@y.values")) # AUC de 0,632
 data_cancer_rl = data_cancer[['AGE', 'IMC','CATEGORIE_ASA','URGENCE', 'SEXE', 'CATEGORIE_IMC_ADULTE','DELAI_ENTREE_INTERV','REA_SI_POST_OP']]
 data_cancer_rl = data_cancer_rl.dropna()
 predictors =['AGE', 'IMC','CATEGORIE_ASA','URGENCE', 'SEXE', 'CATEGORIE_IMC_ADULTE','DELAI_ENTREE_INTERV']
+data_cancer_rl['CATEGORIE_IMC_ADULTE'] = data_cancer_rl['CATEGORIE_IMC_ADULTE'].astype(str)
 
 #Creation des 2 echantillons 
 data_cancer_rea_1 = data_cancer_rl.loc[data_cancer_rl['REA_SI_POST_OP'] == 1]
