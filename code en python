@@ -26,12 +26,12 @@ from rpy2.robjects.packages import importr # permettra d'importer librairies
 
 grdevices=importr('grDevices')
 ##################
-# Définition du répertoire de travail
+# Chargement du fichier
+## Définition du répertoire de travail
 os.chdir("/Users/karimbelarbi/Google_Drive/M1_Data_Science_en_Santé/Djamel Zitouni/Projet rpy2")
 os.getcwd()
 
-# Chargement du fichier
-# importation données en utilisant panda
+## importation données en utilisant panda
 data_pd = pandas.read_csv("export_data_1.csv", delimiter = ";", decimal = ",", encoding = "latin-1")
 type(data_pd)
 
@@ -57,11 +57,11 @@ min(data_cancer['ANNEE']) # 2013
 
 # Dimension de la base de donnée data_cancer
 data_cancer.shape # pour avoir les dimensions 32232 x 130
+list(data_cancer) # pour avoir les noms de colonnes
 
 # Nombre de cas ayant ou non necessité une réanimation
 data_cancer[data_cancer['REA_SI_POST_OP'] == 1].shape
 data_cancer[data_cancer['REA_SI_POST_OP'] == 0].shape
-list(data_cancer) # pour avoir les noms de colonnes
 
 ##################
 # Selection des variables d'interet pour l'étude
@@ -77,7 +77,7 @@ list(data_cancer) # pour avoir les noms de colonnes
 ##################
 # Correction des types de variables
 
-data_cancer = data_cancer.fillna(-1) # on remplie les champs NA par -1
+data_cancer = data_cancer.fillna(-1) # on remplit les champs NA par -1
 
 data_cancer.columns # Affichage des variables
 data_cancer.dtypes # Affichage des types de variables
@@ -113,7 +113,7 @@ convert_dict = {'ID_INTERVENTION': str, # création d'un dictionnaire attribuant
                 'TOTAL_REMPLISSAGE': int
                } 
     
-data_cancer = data_cancer.astype(convert_dict) 
+data_cancer = data_cancer.astype(convert_dict) # conversion effective des types de valeurs
 
 data_cancer = data_cancer.replace("-1",numpy.nan) # On remet les str "-1" en NA
 data_cancer = data_cancer.replace(-1,numpy.nan) # On remet les -1 en NA
@@ -121,7 +121,7 @@ data_cancer = data_cancer.replace(-1,numpy.nan) # On remet les -1 en NA
 print(data_cancer.dtypes) 
 data_cancer.shape # on a toujours dimensions 32232 x 29
 
-pandas.unique(data_cancer['CATEGORIE_ASA']) # vérification nan
+pandas.unique(data_cancer['CATEGORIE_ASA']) # vérification prise en compte des valeurs nan
 
 ##################
 # Traitement des valeurs aberrantes
@@ -155,9 +155,9 @@ max(data_cancer['POIDS']) # 237
 min(data_cancer['POIDS']) # 2 Cela a fonctionné
 
 ##################
-# Ajout de nouvelles variables
+# Ajout de nouvelle variable CATECHOLAMINE
 
-data_cancer['CATECHOLAMINE'] = (data_cancer['DOBUTAMINE'] == 1) | (data_cancer['EPHEDRINE'] == 1) | (data_cancer['NORADRENALINE'] == 1) | (data_cancer['PHENYLEPHRINE'] == 1)
+data_cancer['CATECHOLAMINE'] = (data_cancer['DOBUTAMINE'] == 1) | (data_cancer['EPHEDRINE'] == 1) | (data_cancer['NORADRENALINE'] == 1) | (data_cancer['PHENYLEPHRINE'] == 1) # Catecholamine = 1 si utilisation d'un de ces médicaments
 # pandas.unique(data_cancer['CATHECOLAMINE'])
 data_cancer.shape # pour avoir les dimensions 32232 x 30 (car ajout variable catacholamine)
 list(data_cancer) #
@@ -216,10 +216,10 @@ plt.style.use("bmh")
 plt.savefig("data_cancer_réanimation.png")
 
 ###
-# Description des variables quantitatives de data_cancer
+# Description des variables quantitatives de la base de données data_cancer
 data_cancer.describe().round(2).to_csv('data_cancer_stats_quantitatives.csv', sep = ';', decimal = ',', header = True, encoding = 'latin-1')
 
-# Description des variables qualitatives de data_cancer
+# Description des variables qualitatives de la base de données data_cancer
 result = []
 for column in data_cancer[['CATEGORIE_AGE_ADULTE', 'CATEGORIE_IMC_ADULTE', 'CATEGORIE_ASA',  'URGENCE', 'SEXE', 'ENTREE_URGENCES',  'DECES_SEJOUR_INTERV', 'REA_SI_POST_OP', 'CATECHOLAMINE']]:              
      print("\n" + column)
@@ -230,7 +230,8 @@ pandas.DataFrame(result).to_csv('data_cancer_stats_qualitatives.csv', sep = ',',
 ##################
 # Description et visualisation des variables en fonction du besoin de réanimation (bases data_cancer_rea versus data_cancer_non_rea)
 
-# Pour faire tous les graphs de variables en fonction de rea_si_post_op # Changer xlab = hospitalisation en réanimation 
+##
+# Pour faire tous les graphs de variables en fonction de rea_si_post_op 
 for i in data_cancer.drop(['ID_INTERVENTION', 'ID_PATIENT'], axis = 1).columns: # nom des colonnes à l'exclusion de ID_INTERVENTION et ID_PATIENT
     data_cancer_i = data_cancer[data_cancer[i].notna()] # on retire les enregistrements avec valeurs manquante pour la variable d'intéret
     if data_cancer_i[i].dtypes == int or data_cancer_i[i].dtypes == float:
@@ -265,14 +266,14 @@ for column in data_cancer_rea[['CATEGORIE_AGE_ADULTE', 'CATEGORIE_IMC_ADULTE', '
      print("\n" + column)
      print(data_cancer_rea[column].value_counts())
      result.append(("\n" + column, data_cancer_rea[column].value_counts()))
-pandas.DataFrame(result).to_csv('data_cancer_rea_stats_qualitatives.csv', sep = ',', decimal = '.', encoding = 'latin-1')
+pandas.DataFrame(result).to_csv('data_cancer_rea_stats_qualitatives.csv', sep = ',', decimal = '.', encoding = 'latin-1') # sauvegarde d'une dataframe reprenant les descriptions de variables quantitative de data_cancer_rea
 
 result = []
 for column in data_cancer_non_rea[['CATEGORIE_AGE_ADULTE', 'CATEGORIE_IMC_ADULTE', 'CATEGORIE_ASA',  'URGENCE', 'SEXE', 'ENTREE_URGENCES',  'DECES_SEJOUR_INTERV', 'REA_SI_POST_OP', 'CATECHOLAMINE']]:              
      print("\n" + column)
      print(data_cancer_non_rea[column].value_counts())
      result.append(("\n" + column, data_cancer_non_rea[column].value_counts()))
-pandas.DataFrame(result).to_csv('data_cancer_non_rea_stats_qualitatives.csv', sep = ',', decimal = '.', encoding = 'latin-1')
+pandas.DataFrame(result).to_csv('data_cancer_non_rea_stats_qualitatives.csv', sep = ',', decimal = '.', encoding = 'latin-1')# sauvegarde d'une dataframe reprenant les descriptions de variables quantitative de data_cancer_non_rea
 
 ###################
 # Pour faire analyses statistiques de variables en fonction de rea_si_post_op dans R
@@ -316,7 +317,7 @@ robjects.r("str(data_cancer)") # vérification du type de variables
 
 # Analyse statistique
 
-# Test Wilcoxon
+# Test Wilcoxon si variable quantitative et du Chi2 si variable qualitative
 # HO = hypothèse de distribution identique de la variable entre groupes REA_SI_POST_OP ou non REA_SI_POST_OP
 # H1 = distribution différente de la variable  entre groupes REA_SI_POST_OP ou non REA_SI_POST_OP
 
@@ -365,7 +366,7 @@ robjects.r("""
 # Elimination des valeurs manquantes
 
 robjects.r("data_cancer_glm = na.omit(data_cancer_glm)")
-# robjects.r("data_cancer_glm[complete.cases(data_cancer_glm), ]")
+# robjects.r("data_cancer_glm[complete.cases(data_cancer_glm), ]") # autre possibilité, revenant au même.
 
 robjects.r("str(data_cancer_glm)") # vérification du type de variables
 
@@ -379,7 +380,7 @@ print(robjects.r("summary(modele1)"))
 # Selection automatique des variables (STEP)
 robjects.r("modele2 =step(modele1, direction = 'both', trace = TRUE)")
 print(robjects.r("summary(modele2)"))
-print(robjects.r("modele2$formula")) # Choisi AGE, SEXEM, URGENCE True et DELAI_ENTRE_INTERV
+print(robjects.r("modele2$formula")) # Choisi IMC, SEXEM, URGENCE True et DELAI_ENTRE_INTERV et CATEGORIE_ASAASA3-4-5
 
 # Pour voir les odds-ratios
 print(robjects.r("""round(exp(cbind(OR=coef(modele2), confint(modele2))), digits=3)"""))
@@ -389,7 +390,7 @@ robjects.r("""
            pi_hat = predict(object = modele2, newdata = data_cancer_glm, type = "response") # l’option type="response" de la commande predict permet de calculer πˆ (pi chapeau = pi_hat)
 pi_hat""")
 
-# Pour voir la distribution des ^y (probabilité prédite de réanimation) en fonction du y réel (réanimation ou non, en vrai)
+# Pour voir la distribution des y prédits (probabilité prédite de réanimation) en fonction du y réel (réanimation ou non, en vrai)
 plot = robjects.r("""
            boxplot(pi_hat ~ data_cancer_glm$REA_SI_POST_OP) """)
 
@@ -397,7 +398,7 @@ grdevices = importr('grDevices')
 
 grdevices.png(file="tpy2.png")
 p = robjects.r('boxplot(pi_hat ~ data_cancer_glm$REA_SI_POST_OP)')    
-grdevices.dev_off() # à premiere vue, le y prédit est bien plus grand pour les enregistrements ayant vraiment necessité de la réanimation.
+grdevices.dev_off() # Le y prédit est plus grand pour les enregistrements ayant vraiment necessité une réanimation.
 
 # Tracer la courbe ROC en utilisant le package ROCR
 robjects.r("install.packages('ROCR')")
@@ -408,7 +409,7 @@ robjects.r("""
 prediction_y = prediction(pi_hat[which(!is.na(pi_hat))], data_cancer_glm$REA_SI_POST_OP[which(!is.na(pi_hat))]) 
    """)        
 
-# Traçage de la courbe ROC
+# Tracé de la courbe ROC
 robjects.r("""
            perf = performance(prediction_y, "tpr", "fpr")""")  # tpr pour "true positive rate" et fpr pour "false positive rate"
            
@@ -422,7 +423,7 @@ grdevices.dev_off()
 
 # Recupération de l'aire sous la courbe  de la courbe ROC
 auc = robjects.r("auc = performance(prediction_y, 'auc')")
-print(robjects.r("auc@y.values")) # AUC de 0,64
+print(robjects.r("auc@y.values")) # AUC de 0,632
 
 
 #################
