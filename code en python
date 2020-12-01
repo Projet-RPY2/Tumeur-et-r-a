@@ -455,9 +455,9 @@ Y = df["REA_SI_POST_OP"]
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 X = X.iloc[:,:].values
 labelencoder_X_1 = LabelEncoder()
-X[:, 2] = labelencoder_X_1.fit_transform(X[:, 2])
-X[:, 4] = labelencoder_X_1.fit_transform(X[:, 4])
-X[:, 5] = labelencoder_X_1.fit_transform(X[:, 5])
+X[:, 2] = labelencoder_X_1.fit_transform(X[:, 2]) #recode la variable "categorie_asa" 
+X[:, 4] = labelencoder_X_1.fit_transform(X[:, 4]) #recode la variable "sexe" 
+X[:, 5] = labelencoder_X_1.fit_transform(X[:, 5]) #recode la variable "categorie_imc_adulte" 
 
 #mise à l'echelle des valeurs (évite les erreurs de standardisation)
 from sklearn.preprocessing import StandardScaler
