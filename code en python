@@ -350,7 +350,7 @@ resultat = data.frame(nom_variable, classe_variable, nom_test, p_value)
 
 print(robjects.r("resultat"))
 
-print(robjects.r("write.csv(resultat,'/Users/karimbelarbi/Google_Drive/M1_Data_Science_en_Santé/Djamel Zitouni/Projet rpy2/resultats stats.csv', row.names = FALSE)")
+print(robjects.r("write.csv(resultat,'/Users/karimbelarbi/Google_Drive/M1_Data_Science_en_Santé/Djamel Zitouni/Projet rpy2/resultats stats.csv', row.names = FALSE)"))
       
 
 #################
