@@ -375,12 +375,12 @@ robjects.r("""
            modele1 = glm(REA_SI_POST_OP~., family = "binomial", na.action = na.omit, data = data_cancer_glm)
 """)
     
-print(robjects.r("summary(modele1)"))
+print(robjects.r("summary(modele1)")) # AIC : 29922
 
 # Selection automatique des variables (STEP)
 robjects.r("modele2 =step(modele1, direction = 'both', trace = TRUE)")
-print(robjects.r("summary(modele2)"))
-print(robjects.r("modele2$formula")) # Choisi IMC, SEXEM, URGENCE True et DELAI_ENTRE_INTERV et CATEGORIE_ASAASA3-4-5
+print(robjects.r("summary(modele2)")) # AIC : 29919
+print(robjects.r("modele2$formula")) # Choisi AGE + IMC + SEXE + URGENCE + DELAI_ENTREE_INTERV + CATEGORIE_ASA
 
 # Pour voir les odds-ratios
 print(robjects.r("""round(exp(cbind(OR=coef(modele2), confint(modele2))), digits=3)"""))
