@@ -282,7 +282,7 @@ data_cancer.to_csv('data_cancer_export.csv', sep = ';', decimal = ',', header = 
 
 # Importation de data_cancer dans R via rpy2
 robjects.r("path = '/Users/karimbelarbi/Google_Drive/M1_Data_Science_en_Santé/Djamel Zitouni/Projet rpy2/'")
-robjects.r("data_cancer = read.csv2(file.path(path, 'data_cancer_export.csv'), sep = ';', dec = ',', header = TRUE, encoding = 'latin1')")
+robjects.r("data_cancer = read.csv2(file.path(path, 'data_cancer_export.csv'), sep = ';', dec = ',', header = TRUE, encoding = 'latin1', na.strings = c('', 'NA'))")
 
 # Correction des types de variables
 robjects.r("""data_cancer$ID_INTERVENTION = as.character(data_cancer$ID_INTERVENTION)
