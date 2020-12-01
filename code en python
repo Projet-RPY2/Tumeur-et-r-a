@@ -474,7 +474,7 @@ y_pred = clf.predict(X_test)   # correspond aux valeurs prédites (type bool)
 
 
 #on verifie la correlation entre les valeurs predites et les valeurs attendues (precision du modele)
-print('Precision du "Test" : %s' % metrics.accuracy_score(y_pred, y_test)) #0.77
+print('Precision du "Test" : %s' % metrics.accuracy_score(y_pred, y_test)) #0.59
 
 
 # matrice de confusion (mesure la qualité du modelele)
