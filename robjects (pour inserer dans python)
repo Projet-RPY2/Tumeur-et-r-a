@@ -104,4 +104,101 @@ ggplot(data) +
   labs(x = "Hospitalisation en réanimation", y = "Effectifs", title = "Admission en réanimation") +
   theme_linedraw()
   
-# Visualisation des variables significatives en univariées : 
+###########################
+############################
+
+#################
+# Regression logistique pour expliquer le besoin de réanimation en fonctions de variables pré-op : approche avec rpy2 / glm (R)
+
+# Importation du fichier data_cancer
+path = "/Users/karimbelarbi/Google_Drive/M1_Data_Science_en_Santé/Djamel Zitouni/Projet rpy2/"
+data_cancer = read.csv2(file.path(path, 'data_cancer_export.csv'), sep = ';', dec = ',', header = TRUE, encoding = 'latin1', na.strings = c('', 'NA'))
+str(data_cancer)
+
+# Correction du type de variables
+data_cancer$ID_INTERVENTION = as.character(data_cancer$ID_INTERVENTION)
+data_cancer$ID_PATIENT = as.character(data_cancer$ID_PATIENT)
+data_cancer$AGE = as.numeric(data_cancer$AGE)
+data_cancer$CATEGORIE_AGE_ADULTE = as.factor(data_cancer$CATEGORIE_AGE_ADULTE)
+data_cancer$POIDS = as.integer(data_cancer$POIDS)
+data_cancer$IMC = as.integer(data_cancer$IMC)
+data_cancer$CATEGORIE_IMC_ADULTE = as.factor(data_cancer$CATEGORIE_IMC_ADULTE)
+data_cancer$CATEGORIE_ASA = as.factor(data_cancer$CATEGORIE_ASA)
+data_cancer$URGENCE = as.factor(data_cancer$URGENCE)
+data_cancer$SEXE = as.factor(data_cancer$SEXE)
+data_cancer$DUREE_INTERVENTION = as.integer(data_cancer$DUREE_INTERVENTION)
+data_cancer$DUREE_BLOC = as.integer(data_cancer$DUREE_BLOC)
+data_cancer$DUREE_ANESTHESIE = as.integer(as.integer(data_cancer$DUREE_ANESTHESIE))
+data_cancer$DUREE_INDUCTION_INCISION = as.integer(data_cancer$DUREE_INDUCTION_INCISION)
+data_cancer$LIB_DIAGNOSTIC = as.factor(data_cancer$LIB_DIAGNOSTIC)
+data_cancer$ENTREE_URGENCES = as.factor(data_cancer$ENTREE_URGENCES)
+data_cancer$DUREE_SEJOUR_INTERV = as.integer(data_cancer$DUREE_SEJOUR_INTERV)
+data_cancer$DELAI_ENTREE_INTERV = as.integer(data_cancer$DELAI_ENTREE_INTERV)
+data_cancer$DECES_SEJOUR_INTERV = as.factor(data_cancer$DECES_SEJOUR_INTERV)
+data_cancer$REA_SI_POST_OP = as.factor(data_cancer$REA_SI_POST_OP)
+data_cancer$MOY_PNIM_BLOC_INDUC = as.numeric(data_cancer$MOY_PNIM_BLOC_INDUC)
+data_cancer$MOY_PNIM_ANESTH = as.numeric(data_cancer$MOY_PNIM_ANESTH)
+data_cancer$MOY_VCE_CHIR_POIDS_IDEAL  = as.numeric(data_cancer$MOY_VCE_CHIR_POIDS_IDEAL)
+data_cancer$TOTAL_REMPLISSAGE = as.numeric(data_cancer$TOTAL_REMPLISSAGE)
+data_cancer$CATECHOLAMINE = as.factor(data_cancer$CATECHOLAMINE)
+
+# Creation dataframe avec variables susceptibles d'expliquer la réanimation 
+data_cancer_glm = data_cancer[, c('AGE', 'IMC','SEXE', 'URGENCE', 'DELAI_ENTREE_INTERV', 'CATEGORIE_IMC_ADULTE','CATEGORIE_ASA','REA_SI_POST_OP')]
+
+# Elimination des valeurs manquantes
+
+data_cancer_glm = na.omit(data_cancer_glm)
+
+str(data_cancer_glm) # vérification du type de variables
+
+# Premier modèle en regression logistique
+
+modele1 = glm(REA_SI_POST_OP~., family = "binomial", na.action = na.omit, data = data_cancer_glm)
+
+
+summary(modele1) # AIC : 29922
+
+# Selection automatique des variables (STEP)
+modele2 =step(modele1, direction = 'both', trace = TRUE)
+summary(modele2)# AIC : 29919
+modele2$formula# Choisi AGE + IMC + SEXE + URGENCE + DELAI_ENTREE_INTERV + CATEGORIE_ASA
+
+round(exp(cbind(OR=coef(modele2), confint(modele2))), digits=3)
+
+# calcul du y prédit (réanimation ou non) suivant notre modèle
+pi_hat = predict(object = modele2, newdata = data_cancer_glm, type = "response") # l’option type="response" de la commande predict permet de calculer πˆ (pi chapeau = pi_hat)
+pi_hat
+
+# Pour voir la distribution des y prédits (probabilité prédite de réanimation) en fonction du y réel (réanimation ou non, en vrai)
+
+boxplot(pi_hat ~ data_cancer_glm$REA_SI_POST_OP)
+boxplot(pi_hat ~ data_cancer_glm$REA_SI_POST_OP) # Le y prédit est plus grand pour les enregistrements ayant vraiment necessité une réanimation.
+
+# Tracer la courbe ROC en utilisant le package ROCR
+# install.packages('ROCR')
+library(ROCR)
+
+# prediction de la classe d'affectation pour differents seuils grace à fonction prediction du package ROCR
+prediction_y = prediction(pi_hat[which(!is.na(pi_hat))], data_cancer_glm$REA_SI_POST_OP[which(!is.na(pi_hat))])
+
+# Tracé de la courbe ROC
+perf = performance(prediction_y, "tpr", "fpr")  # tpr pour "true positive rate" et fpr pour "false positive rate"
+plot(perf)# plot de la courbe ROC  taux de vrais positif  versus faux positifs
+abline (a=0, b=1)
+
+# Recupération de l'aire sous la courbe  de la courbe ROC
+auc = performance(prediction_y, 'auc')
+auc@y.values# AUC de 0,632
+
+# Visualisation des odds-ratios
+# install.packages("sjPlot")
+library(sjPlot)
+plot_model(modele2, sort.est = TRUE , rm.terms = "SEXE [I]", title = "Admission en réanimation", axis.title = "Odds-ratio (95% CI)")
+
+data(mtcars)
+m <- glm(mpg ~ wt + am + cyl + gear, data = mtcars)
+plot_model(m)
+
+
+
+
